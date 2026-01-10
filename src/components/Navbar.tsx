@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Menu, X, TrendingUp } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const navLinks = [
   { name: 'How It Works', href: '#how-it-works' },
@@ -24,14 +25,14 @@ const Navbar = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
-          <a href="#" className="flex items-center gap-2 group">
+          <Link to="/" className="flex items-center gap-2 group">
             <div className="w-10 h-10 rounded-lg bg-gradient-primary flex items-center justify-center shadow-glow">
               <TrendingUp className="w-5 h-5 text-primary-foreground" />
             </div>
             <span className="font-display text-xl font-bold text-foreground group-hover:text-primary transition-colors">
               QuantMentor
             </span>
-          </a>
+          </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center gap-8">
@@ -51,9 +52,11 @@ const Navbar = () => {
             <Button variant="ghost" size="sm">
               Login
             </Button>
-            <Button variant="hero" size="default">
-              Submit Your Strategy
-            </Button>
+            <Link to="/submit-strategy">
+              <Button variant="hero" size="default">
+                Submit Your Strategy
+              </Button>
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -91,9 +94,11 @@ const Navbar = () => {
                 <Button variant="glass" className="w-full">
                   Login
                 </Button>
-                <Button variant="hero" className="w-full">
-                  Submit Your Strategy
-                </Button>
+                <Link to="/submit-strategy" className="block">
+                  <Button variant="hero" className="w-full" onClick={() => setIsOpen(false)}>
+                    Submit Your Strategy
+                  </Button>
+                </Link>
               </div>
             </div>
           </motion.div>
