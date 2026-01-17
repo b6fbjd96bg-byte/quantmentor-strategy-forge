@@ -49,9 +49,11 @@ const Navbar = () => {
 
           {/* Desktop CTA */}
           <div className="hidden lg:flex items-center gap-3">
-            <Button variant="ghost" size="sm">
-              Login
-            </Button>
+            <Link to="/auth">
+              <Button variant="ghost" size="sm">
+                Login
+              </Button>
+            </Link>
             <Link to="/submit-strategy">
               <Button variant="hero" size="default">
                 Submit Your Strategy
@@ -91,9 +93,11 @@ const Navbar = () => {
                 </a>
               ))}
               <div className="pt-4 space-y-3">
-                <Button variant="glass" className="w-full">
-                  Login
-                </Button>
+                <Link to="/auth" className="block">
+                  <Button variant="glass" className="w-full" onClick={() => setIsOpen(false)}>
+                    Login
+                  </Button>
+                </Link>
                 <Link to="/submit-strategy" className="block">
                   <Button variant="hero" className="w-full" onClick={() => setIsOpen(false)}>
                     Submit Your Strategy
