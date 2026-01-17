@@ -7,14 +7,28 @@ import {
   Lock, 
   RefreshCw,
   Target,
-  Clock
+  Clock,
+  Bot,
+  TrendingUp
 } from 'lucide-react';
 
 const features = [
   {
+    icon: Bot,
+    title: 'Fully Autonomous Trading',
+    description: 'Sit back and relax. Our AI takes all trades for you using pre-made, proven strategies—no manual intervention needed.',
+    color: 'primary',
+  },
+  {
+    icon: TrendingUp,
+    title: 'All Market Coverage',
+    description: 'Trade stocks, forex, crypto, commodities, and indices—all from one platform with AI handling every market.',
+    color: 'accent',
+  },
+  {
     icon: Brain,
-    title: 'AI-Assisted Execution',
-    description: 'Machine learning models analyze market conditions in real-time, optimizing entry and exit points for maximum returns.',
+    title: 'AI Decision Engine',
+    description: 'Advanced machine learning analyzes market conditions in real-time, making intelligent entry and exit decisions.',
     color: 'primary',
   },
   {
@@ -25,8 +39,8 @@ const features = [
   },
   {
     icon: BarChart3,
-    title: 'Comprehensive Backtesting',
-    description: 'Test strategies against years of historical data with institutional-grade simulation engines.',
+    title: 'Pre-Built Strategies',
+    description: 'Choose from battle-tested strategies developed by quant experts, or submit your own custom approach.',
     color: 'primary',
   },
   {
@@ -42,21 +56,9 @@ const features = [
     color: 'primary',
   },
   {
-    icon: RefreshCw,
-    title: 'Continuous Optimization',
-    description: 'AI continuously learns and adapts your strategy to evolving market conditions.',
-    color: 'accent',
-  },
-  {
-    icon: Target,
-    title: 'Strategy Customization',
-    description: 'Fine-tune every parameter—from timeframes to indicators—to match your trading style.',
-    color: 'primary',
-  },
-  {
     icon: Clock,
-    title: '24/7 Monitoring',
-    description: 'Round-the-clock surveillance with instant alerts and automated fail-safes.',
+    title: '24/7 Autonomous Operation',
+    description: 'AI trades around the clock across global markets—you never miss an opportunity while you sleep.',
     color: 'accent',
   },
 ];
@@ -80,15 +82,15 @@ const Features = () => {
           className="text-center max-w-3xl mx-auto mb-16 lg:mb-20"
         >
           <span className="inline-block text-sm font-semibold text-primary uppercase tracking-wider mb-4">
-            Platform Features
+            AI-Powered Features
           </span>
           <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
-            Everything You Need to{' '}
-            <span className="text-gradient-accent">Trade Smarter</span>
+            Nothing To Do.{' '}
+            <span className="text-gradient-accent">AI Does It All.</span>
           </h2>
           <p className="text-lg text-muted-foreground">
-            Enterprise-grade infrastructure and AI-powered tools, 
-            designed for traders who demand excellence.
+            Our AI handles every aspect of trading—from analysis to execution—across all markets, 
+            using proven strategies that work while you focus on what matters.
           </p>
         </motion.div>
 

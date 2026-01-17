@@ -27,7 +27,7 @@ const Hero = () => {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/50 border border-border/50 backdrop-blur-sm mb-8"
           >
             <Zap className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium text-foreground">AI-Powered Algorithmic Trading</span>
+            <span className="text-sm font-medium text-foreground">Fully Autonomous AI Trading</span>
           </motion.div>
 
           {/* Headline */}
@@ -37,8 +37,8 @@ const Hero = () => {
             transition={{ duration: 0.7, delay: 0.1 }}
             className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6"
           >
-            Transform Your Strategy Into{' '}
-            <span className="text-gradient-primary">Automated Profits</span>
+            Let AI Trade For You{' '}
+            <span className="text-gradient-primary">Across All Markets</span>
           </motion.h1>
 
           {/* Subheadline */}
@@ -48,8 +48,8 @@ const Hero = () => {
             transition={{ duration: 0.7, delay: 0.2 }}
             className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto mb-10"
           >
-            Submit your trading ideas—no coding required. Our expert developers convert them into 
-            AI-driven algorithms that execute with speed, precision, and discipline in live markets.
+            Zero effort required. Our AI executes trades 24/7 using pre-built, battle-tested strategies 
+            in stocks, forex, crypto, and commodities—with speed, precision, and discipline.
           </motion.p>
 
           {/* CTAs */}
