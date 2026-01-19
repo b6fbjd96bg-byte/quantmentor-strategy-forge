@@ -1,29 +1,30 @@
 import { TrendingUp, Mail, MapPin, Phone } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const footerLinks = {
   Product: [
-    { name: 'How It Works', href: '#how-it-works' },
-    { name: 'Features', href: '#features' },
-    { name: 'Pricing', href: '#pricing' },
-    { name: 'API Documentation', href: '#' },
+    { name: 'How It Works', href: '/#how-it-works', isAnchor: true },
+    { name: 'Features', href: '/#features', isAnchor: true },
+    { name: 'Pricing', href: '/#pricing', isAnchor: true },
+    { name: 'API Documentation', href: '/api-documentation', isAnchor: false },
   ],
   Company: [
-    { name: 'About Us', href: '#' },
-    { name: 'Careers', href: '#' },
-    { name: 'Press', href: '#' },
-    { name: 'Contact', href: '#' },
+    { name: 'About Us', href: '/about-us', isAnchor: false },
+    { name: 'Careers', href: '/careers', isAnchor: false },
+    { name: 'Press', href: '/press', isAnchor: false },
+    { name: 'Contact', href: '/contact', isAnchor: false },
   ],
   Resources: [
-    { name: 'Blog', href: '#' },
-    { name: 'Case Studies', href: '#' },
-    { name: 'Help Center', href: '#' },
-    { name: 'Strategy Guide', href: '#' },
+    { name: 'Blog', href: '/blog', isAnchor: false },
+    { name: 'Case Studies', href: '/case-studies', isAnchor: false },
+    { name: 'Help Center', href: '/help-center', isAnchor: false },
+    { name: 'Strategy Guide', href: '/strategy-guide', isAnchor: false },
   ],
   Legal: [
-    { name: 'Privacy Policy', href: '#' },
-    { name: 'Terms of Service', href: '#' },
-    { name: 'Risk Disclosure', href: '#' },
-    { name: 'Compliance', href: '#' },
+    { name: 'Privacy Policy', href: '/privacy-policy', isAnchor: false },
+    { name: 'Terms of Service', href: '/terms-of-service', isAnchor: false },
+    { name: 'Risk Disclosure', href: '/risk-disclosure', isAnchor: false },
+    { name: 'Compliance', href: '/compliance', isAnchor: false },
   ],
 };
 
@@ -34,14 +35,14 @@ const Footer = () => {
         <div className="grid grid-cols-2 md:grid-cols-6 gap-8 lg:gap-12">
           {/* Brand Column */}
           <div className="col-span-2">
-            <a href="#" className="flex items-center gap-2 mb-6">
+            <Link to="/" className="flex items-center gap-2 mb-6">
               <div className="w-10 h-10 rounded-lg bg-gradient-primary flex items-center justify-center shadow-glow">
                 <TrendingUp className="w-5 h-5 text-primary-foreground" />
               </div>
               <span className="font-display text-xl font-bold text-foreground">
                 QuantMentor
               </span>
-            </a>
+            </Link>
             <p className="text-muted-foreground text-sm mb-6 max-w-xs">
               Transform your trading strategies into AI-powered algorithms. 
               Professional automation for modern traders.
@@ -69,12 +70,21 @@ const Footer = () => {
               <ul className="space-y-3">
                 {links.map((link) => (
                   <li key={link.name}>
-                    <a
-                      href={link.href}
-                      className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                    >
-                      {link.name}
-                    </a>
+                    {link.isAnchor ? (
+                      <a
+                        href={link.href}
+                        className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                      >
+                        {link.name}
+                      </a>
+                    ) : (
+                      <Link
+                        to={link.href}
+                        className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                      >
+                        {link.name}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>
