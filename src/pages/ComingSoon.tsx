@@ -45,7 +45,7 @@ const CandlestickChart = () => {
   }, []);
 
   return (
-    <div className="absolute inset-0 flex items-end justify-center gap-2 p-8 opacity-20">
+    <div className="absolute inset-0 flex items-end justify-center gap-2 p-8 opacity-10 pointer-events-none">
       {candles.map((candle, i) => {
         const isGreen = candle.close > candle.open;
         const bodyHeight = Math.abs(candle.close - candle.open);
@@ -218,7 +218,7 @@ const ComingSoon = () => {
       <FloatingParticles />
 
       {/* Main content */}
-      <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4">
+      <div className="relative z-20 min-h-screen flex flex-col items-center justify-center px-4 pt-16">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -230,12 +230,12 @@ const ComingSoon = () => {
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
-            className="inline-flex items-center gap-3 mb-8"
+            className="flex items-center justify-center gap-3 mb-6"
           >
-            <div className="w-14 h-14 rounded-xl bg-gradient-primary flex items-center justify-center shadow-glow">
-              <TrendingUp className="w-7 h-7 text-primary-foreground" />
+            <div className="w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center shadow-glow">
+              <TrendingUp className="w-6 h-6 text-primary-foreground" />
             </div>
-            <span className="font-display text-2xl font-bold text-foreground">
+            <span className="font-display text-xl font-bold text-foreground">
               QuantMentor
             </span>
           </motion.div>
@@ -245,7 +245,7 @@ const ComingSoon = () => {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.3 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-6"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-8"
           >
             <Sparkles className="w-4 h-4" />
             {formattedPageName}
@@ -256,10 +256,10 @@ const ComingSoon = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="font-display text-4xl md:text-6xl font-bold text-foreground mb-6"
+            className="font-display text-5xl md:text-7xl font-bold mb-6"
           >
-            Coming{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-primary">
+            <span className="text-foreground">Coming </span>
+            <span className="text-gradient-primary">
               Soon
             </span>
           </motion.h1>
