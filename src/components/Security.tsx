@@ -1,11 +1,21 @@
 import { motion } from 'framer-motion';
-import { Shield, Lock, Server, FileCheck, Eye, AlertTriangle } from 'lucide-react';
+import { Shield, Lock, Server, FileCheck, Eye, AlertTriangle, Link2, Wallet } from 'lucide-react';
 
 const securityFeatures = [
   {
+    icon: Link2,
+    title: 'Direct Broker Connection',
+    description: 'We connect directly to your broker account. All trades execute through your existing brokerage—we never touch your funds.',
+  },
+  {
+    icon: Wallet,
+    title: 'Your Money Stays Yours',
+    description: 'Zero capital custody. Your funds remain in your broker account at all times. We only send trading signals, never handle money.',
+  },
+  {
     icon: Lock,
     title: 'Bank-Grade Encryption',
-    description: 'AES-256 encryption for all data at rest and in transit. Your strategies and data are fortress-protected.',
+    description: 'AES-256 encryption for all data at rest and in transit. Your strategies and credentials are fortress-protected.',
   },
   {
     icon: Server,
@@ -13,19 +23,9 @@ const securityFeatures = [
     description: 'SOC 2 Type II certified data centers with redundant systems and 24/7 physical security.',
   },
   {
-    icon: FileCheck,
-    title: 'Regulatory Compliance',
-    description: 'Full compliance with SEC, FINRA, and international trading regulations across all jurisdictions.',
-  },
-  {
     icon: Eye,
     title: 'Real-Time Monitoring',
     description: 'Continuous security monitoring with AI-powered threat detection and instant response protocols.',
-  },
-  {
-    icon: Shield,
-    title: 'Access Controls',
-    description: 'Multi-factor authentication, IP whitelisting, and granular permission management.',
   },
   {
     icon: AlertTriangle,
@@ -67,9 +67,12 @@ const Security = () => {
             Your Capital is{' '}
             <span className="text-gradient-primary">Protected</span>
           </h2>
-          <p className="text-lg text-muted-foreground">
-            Enterprise-grade security infrastructure with regulatory compliance 
-            across major financial markets. Trade with confidence.
+          <p className="text-lg text-muted-foreground mb-4">
+            We connect directly with your broker to execute trades—your money never leaves your account.
+          </p>
+          <p className="text-base text-muted-foreground/80">
+            QuantMentor acts as a bridge between your strategies and your broker. We send trading signals, 
+            your broker executes them. Zero capital custody means zero risk of us mishandling your funds.
           </p>
         </motion.div>
 
