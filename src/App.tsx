@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import SubmitStrategy from "./pages/SubmitStrategy";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
+import ComingSoon from "./pages/ComingSoon";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,23 @@ const App = () => (
           <Route path="/submit-strategy" element={<SubmitStrategy />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          {/* Product Pages */}
+          <Route path="/api-documentation" element={<ComingSoon />} />
+          {/* Company Pages */}
+          <Route path="/about-us" element={<ComingSoon />} />
+          <Route path="/careers" element={<ComingSoon />} />
+          <Route path="/press" element={<ComingSoon />} />
+          <Route path="/contact" element={<ComingSoon />} />
+          {/* Resources Pages */}
+          <Route path="/blog" element={<ComingSoon />} />
+          <Route path="/case-studies" element={<ComingSoon />} />
+          <Route path="/help-center" element={<ComingSoon />} />
+          <Route path="/strategy-guide" element={<ComingSoon />} />
+          {/* Legal Pages */}
+          <Route path="/privacy-policy" element={<ComingSoon />} />
+          <Route path="/terms-of-service" element={<ComingSoon />} />
+          <Route path="/risk-disclosure" element={<ComingSoon />} />
+          <Route path="/compliance" element={<ComingSoon />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
