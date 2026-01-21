@@ -9,6 +9,10 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import ComingSoon from "./pages/ComingSoon";
 import NotFound from "./pages/NotFound";
+import AIStrategies from "./pages/AIStrategies";
+import LiveTrading from "./pages/LiveTrading";
+import Analytics from "./pages/Analytics";
+import Settings from "./pages/Settings";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +27,11 @@ const App = () => (
           <Route path="/submit-strategy" element={<SubmitStrategy />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          {/* Dashboard Sub-pages */}
+          <Route path="/ai-strategies" element={<AIStrategies />} />
+          <Route path="/live-trading" element={<LiveTrading />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/settings" element={<Settings />} />
           {/* Product Pages */}
           <Route path="/api-documentation" element={<ComingSoon />} />
           {/* Company Pages */}
@@ -40,6 +49,7 @@ const App = () => (
           <Route path="/terms-of-service" element={<ComingSoon />} />
           <Route path="/risk-disclosure" element={<ComingSoon />} />
           <Route path="/compliance" element={<ComingSoon />} />
+          <Route path="/coming-soon" element={<ComingSoon />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
