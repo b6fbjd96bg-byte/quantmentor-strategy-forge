@@ -20,11 +20,15 @@ import {
   Bot,
   LineChart,
   PieChart,
-  ArrowUpRight,
-  ArrowDownRight,
-  RefreshCw
+  RefreshCw,
+  Menu
 } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
+import BrokerConnection from '@/components/dashboard/BrokerConnection';
+import LiveTradingPanel from '@/components/dashboard/LiveTradingPanel';
+import PerformanceChart from '@/components/dashboard/PerformanceChart';
+import QuickActions from '@/components/dashboard/QuickActions';
+import MarketOverview from '@/components/dashboard/MarketOverview';
 
 interface Strategy {
   id: string;
@@ -45,6 +49,7 @@ const Dashboard = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [strategies, setStrategies] = useState<Strategy[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -98,19 +103,12 @@ const Dashboard = () => {
     activeBots: 3,
   };
 
-  const mockTrades = [
-    { id: 1, pair: 'BTC/USD', type: 'buy', amount: 0.5, profit: 234.50, time: '2 min ago' },
-    { id: 2, pair: 'ETH/USD', type: 'sell', amount: 2.3, profit: -45.20, time: '15 min ago' },
-    { id: 3, pair: 'AAPL', type: 'buy', amount: 10, profit: 89.00, time: '1 hour ago' },
-    { id: 4, pair: 'EUR/USD', type: 'sell', amount: 5000, profit: 120.00, time: '2 hours ago' },
-  ];
-
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-500/20 text-green-400';
+      case 'active': return 'bg-accent/20 text-accent';
       case 'pending': return 'bg-yellow-500/20 text-yellow-400';
-      case 'paused': return 'bg-gray-500/20 text-gray-400';
-      default: return 'bg-blue-500/20 text-blue-400';
+      case 'paused': return 'bg-muted text-muted-foreground';
+      default: return 'bg-primary/20 text-primary';
     }
   };
 
@@ -128,7 +126,11 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Sidebar */}
-      <aside className="fixed left-0 top-0 h-screen w-64 bg-card border-r border-border p-6 flex flex-col">
+      <motion.aside 
+        initial={{ x: 0 }}
+        animate={{ x: sidebarOpen ? 0 : -256 }}
+        className="fixed left-0 top-0 h-screen w-64 bg-card border-r border-border p-6 flex flex-col z-50"
+      >
         <Link to="/" className="flex items-center gap-3 mb-10">
           <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
             <Zap className="w-6 h-6 text-primary-foreground" />
@@ -138,14 +140,15 @@ const Dashboard = () => {
 
         <nav className="flex-1 space-y-2">
           {[
-            { icon: BarChart3, label: 'Dashboard', active: true },
-            { icon: Bot, label: 'AI Strategies' },
-            { icon: LineChart, label: 'Live Trading' },
-            { icon: PieChart, label: 'Analytics' },
-            { icon: Settings, label: 'Settings' },
+            { icon: BarChart3, label: 'Dashboard', active: true, href: '/dashboard' },
+            { icon: Bot, label: 'AI Strategies', href: '/coming-soon' },
+            { icon: LineChart, label: 'Live Trading', href: '/coming-soon' },
+            { icon: PieChart, label: 'Analytics', href: '/coming-soon' },
+            { icon: Settings, label: 'Settings', href: '/coming-soon' },
           ].map((item, index) => (
-            <button
+            <Link
               key={index}
+              to={item.href}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                 item.active
                   ? 'bg-primary/10 text-primary'
@@ -154,7 +157,7 @@ const Dashboard = () => {
             >
               <item.icon className="w-5 h-5" />
               <span className="font-medium">{item.label}</span>
-            </button>
+            </Link>
           ))}
         </nav>
 
@@ -167,10 +170,18 @@ const Dashboard = () => {
             <span className="font-medium">Sign Out</span>
           </button>
         </div>
-      </aside>
+      </motion.aside>
+
+      {/* Mobile Menu Toggle */}
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="fixed top-4 left-4 z-50 lg:hidden p-2 rounded-lg bg-card border border-border"
+      >
+        <Menu className="w-5 h-5" />
+      </button>
 
       {/* Main Content */}
-      <main className="ml-64 p-8">
+      <main className={`transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-0'} p-8`}>
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -236,7 +247,7 @@ const Dashboard = () => {
                 <div className={`w-12 h-12 rounded-xl ${stat.color === 'primary' ? 'bg-primary/10' : 'bg-accent/10'} flex items-center justify-center`}>
                   <stat.icon className={`w-6 h-6 ${stat.color === 'primary' ? 'text-primary' : 'text-accent'}`} />
                 </div>
-                <span className={`text-sm font-medium ${stat.changePositive ? 'text-green-400' : 'text-red-400'}`}>
+                <span className={`text-sm font-medium ${stat.changePositive ? 'text-accent' : 'text-destructive'}`}>
                   {stat.change}
                 </span>
               </div>
@@ -246,68 +257,33 @@ const Dashboard = () => {
           ))}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Recent Trades */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="lg:col-span-2 bg-card rounded-2xl border border-border p-6"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="font-display text-xl font-bold">Recent Trades</h2>
-              <button className="text-sm text-primary hover:text-primary/80 font-medium flex items-center gap-1">
-                View All <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
+        {/* Main Grid - Row 1 */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <BrokerConnection />
+          <LiveTradingPanel />
+        </div>
 
-            <div className="space-y-4">
-              {mockTrades.map((trade, index) => (
-                <div
-                  key={trade.id}
-                  className="flex items-center justify-between p-4 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      trade.type === 'buy' ? 'bg-green-500/20' : 'bg-red-500/20'
-                    }`}>
-                      {trade.type === 'buy' ? (
-                        <TrendingUp className="w-5 h-5 text-green-400" />
-                      ) : (
-                        <TrendingDown className="w-5 h-5 text-red-400" />
-                      )}
-                    </div>
-                    <div>
-                      <p className="font-medium">{trade.pair}</p>
-                      <p className="text-sm text-muted-foreground capitalize">
-                        {trade.type} • {trade.amount}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className={`font-medium ${trade.profit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      {trade.profit >= 0 ? '+' : ''}${trade.profit.toFixed(2)}
-                    </p>
-                    <p className="text-sm text-muted-foreground flex items-center gap-1 justify-end">
-                      <Clock className="w-3 h-3" /> {trade.time}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
+        {/* Main Grid - Row 2 */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          <div className="lg:col-span-2">
+            <PerformanceChart />
+          </div>
+          <MarketOverview />
+        </div>
 
+        {/* Main Grid - Row 3 */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           {/* Your Strategies */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="bg-card rounded-2xl border border-border p-6"
+            className="lg:col-span-2 bg-card rounded-2xl border border-border p-6"
           >
             <div className="flex items-center justify-between mb-6">
               <h2 className="font-display text-xl font-bold">Your Strategies</h2>
-              <Link to="/submit-strategy" className="text-sm text-primary hover:text-primary/80 font-medium">
-                + Add
+              <Link to="/submit-strategy" className="text-sm text-primary hover:text-primary/80 font-medium flex items-center gap-1">
+                + Add New <ChevronRight className="w-4 h-4" />
               </Link>
             </div>
 
@@ -325,8 +301,8 @@ const Dashboard = () => {
                 </Link>
               </div>
             ) : (
-              <div className="space-y-3">
-                {strategies.slice(0, 5).map((strategy) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {strategies.slice(0, 6).map((strategy) => (
                   <div
                     key={strategy.id}
                     className="p-4 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
@@ -345,14 +321,17 @@ const Dashboard = () => {
               </div>
             )}
           </motion.div>
+
+          {/* Quick Actions Sidebar */}
+          <QuickActions />
         </div>
 
-        {/* Quick Actions */}
+        {/* CTA Banner */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="mt-8 bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 rounded-2xl border border-primary/20 p-8"
+          transition={{ delay: 0.7 }}
+          className="bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 rounded-2xl border border-primary/20 p-8"
         >
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div>
@@ -370,10 +349,12 @@ const Dashboard = () => {
                   Custom Strategy
                 </Button>
               </Link>
-              <Button variant="heroOutline" className="gap-2">
-                <Bot className="w-5 h-5" />
-                AI Strategies
-              </Button>
+              <Link to="/coming-soon">
+                <Button variant="heroOutline" className="gap-2">
+                  <Bot className="w-5 h-5" />
+                  AI Strategies
+                </Button>
+              </Link>
             </div>
           </div>
         </motion.div>
