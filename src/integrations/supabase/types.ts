@@ -113,6 +113,87 @@ export type Database = {
         }
         Relationships: []
       }
+      trade_journal: {
+        Row: {
+          created_at: string
+          emotions: string | null
+          entry_date: string
+          entry_price: number
+          entry_reason: string | null
+          exit_date: string | null
+          exit_price: number | null
+          exit_reason: string | null
+          id: string
+          lessons_learned: string | null
+          market: string
+          profit_loss: number | null
+          profit_loss_percentage: number | null
+          quantity: number
+          rating: number | null
+          screenshots: string[] | null
+          status: string
+          strategy_used: string | null
+          symbol: string
+          tags: string[] | null
+          timeframe: string | null
+          trade_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emotions?: string | null
+          entry_date: string
+          entry_price: number
+          entry_reason?: string | null
+          exit_date?: string | null
+          exit_price?: number | null
+          exit_reason?: string | null
+          id?: string
+          lessons_learned?: string | null
+          market: string
+          profit_loss?: number | null
+          profit_loss_percentage?: number | null
+          quantity: number
+          rating?: number | null
+          screenshots?: string[] | null
+          status?: string
+          strategy_used?: string | null
+          symbol: string
+          tags?: string[] | null
+          timeframe?: string | null
+          trade_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emotions?: string | null
+          entry_date?: string
+          entry_price?: number
+          entry_reason?: string | null
+          exit_date?: string | null
+          exit_price?: number | null
+          exit_reason?: string | null
+          id?: string
+          lessons_learned?: string | null
+          market?: string
+          profit_loss?: number | null
+          profit_loss_percentage?: number | null
+          quantity?: number
+          rating?: number | null
+          screenshots?: string[] | null
+          status?: string
+          strategy_used?: string | null
+          symbol?: string
+          tags?: string[] | null
+          timeframe?: string | null
+          trade_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
