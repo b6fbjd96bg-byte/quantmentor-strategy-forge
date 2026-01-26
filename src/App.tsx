@@ -13,6 +13,7 @@ import AIStrategies from "./pages/AIStrategies";
 import LiveTrading from "./pages/LiveTrading";
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
+import TradeJournal from "./pages/TradeJournal";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +31,7 @@ const App = () => (
           {/* Dashboard Sub-pages */}
           <Route path="/ai-strategies" element={<AIStrategies />} />
           <Route path="/live-trading" element={<LiveTrading />} />
+          <Route path="/trade-journal" element={<TradeJournal />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/settings" element={<Settings />} />
           {/* Product Pages */}
