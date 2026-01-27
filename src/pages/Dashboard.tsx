@@ -29,6 +29,7 @@ import LiveTradingPanel from '@/components/dashboard/LiveTradingPanel';
 import PerformanceChart from '@/components/dashboard/PerformanceChart';
 import QuickActions from '@/components/dashboard/QuickActions';
 import MarketOverview from '@/components/dashboard/MarketOverview';
+import TradingViewChat from '@/components/dashboard/TradingViewChat';
 
 interface Strategy {
   id: string;
@@ -271,60 +272,68 @@ const Dashboard = () => {
           <MarketOverview />
         </div>
 
-        {/* Main Grid - Row 3 */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          {/* Your Strategies */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="lg:col-span-2 bg-card rounded-2xl border border-border p-6"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="font-display text-xl font-bold">Your Strategies</h2>
-              <Link to="/submit-strategy" className="text-sm text-primary hover:text-primary/80 font-medium flex items-center gap-1">
-                + Add New <ChevronRight className="w-4 h-4" />
-              </Link>
-            </div>
-
-            {strategies.length === 0 ? (
-              <div className="text-center py-8">
-                <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-4">
-                  <Bot className="w-8 h-8 text-muted-foreground" />
-                </div>
-                <p className="text-muted-foreground mb-4">No strategies yet</p>
-                <Link to="/submit-strategy">
-                  <Button variant="outline" size="sm" className="gap-2">
-                    <Plus className="w-4 h-4" />
-                    Submit Your First Strategy
-                  </Button>
-                </Link>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {strategies.slice(0, 6).map((strategy) => (
-                  <div
-                    key={strategy.id}
-                    className="p-4 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="font-medium">{strategy.name}</p>
-                      <span className={`text-xs px-2 py-1 rounded-full capitalize ${getStatusColor(strategy.status)}`}>
-                        {strategy.status}
-                      </span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      {strategy.strategy_type} • {strategy.markets.join(', ')}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </motion.div>
-
-          {/* Quick Actions Sidebar */}
+        {/* Main Grid - Row 2.5: TradingView Chat */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <TradingViewChat />
           <QuickActions />
         </div>
+
+        {/* Main Grid - Row 3: Strategies */}
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ delay: 0.5, type: "spring", stiffness: 100 }}
+          className="bg-card rounded-2xl border border-border p-6 mb-6"
+        >
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="font-display text-xl font-bold">Your Strategies</h2>
+            <Link to="/submit-strategy" className="text-sm text-primary hover:text-primary/80 font-medium flex items-center gap-1">
+              + Add New <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          {strategies.length === 0 ? (
+            <div className="text-center py-8">
+              <motion.div 
+                className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-4"
+                animate={{ rotate: [0, 10, -10, 0] }}
+                transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+              >
+                <Bot className="w-8 h-8 text-muted-foreground" />
+              </motion.div>
+              <p className="text-muted-foreground mb-4">No strategies yet</p>
+              <Link to="/submit-strategy">
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Plus className="w-4 h-4" />
+                  Submit Your First Strategy
+                </Button>
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {strategies.slice(0, 6).map((strategy, index) => (
+                <motion.div
+                  key={strategy.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  whileHover={{ scale: 1.02, y: -2 }}
+                  className="p-4 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="font-medium">{strategy.name}</p>
+                    <span className={`text-xs px-2 py-1 rounded-full capitalize ${getStatusColor(strategy.status)}`}>
+                      {strategy.status}
+                    </span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {strategy.strategy_type} • {strategy.markets.join(', ')}
+                  </p>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </motion.div>
 
         {/* CTA Banner */}
         <motion.div
