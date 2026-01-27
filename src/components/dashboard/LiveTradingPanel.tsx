@@ -35,7 +35,12 @@ const LiveTradingPanel = () => {
   const [marketData, setMarketData] = useState({
     btc: { price: 42580, change: 2.4 },
     eth: { price: 2310, change: 1.8 },
-    spy: { price: 485.20, change: 0.3 },
+    sol: { price: 98.75, change: 5.2 },
+    bnb: { price: 312.50, change: 0.9 },
+    xrp: { price: 0.5234, change: -1.2 },
+    avax: { price: 35.42, change: 3.8 },
+    doge: { price: 0.0823, change: -0.5 },
+    link: { price: 14.82, change: 2.9 },
   });
 
   // Simulate live price updates
@@ -59,11 +64,22 @@ const LiveTradingPanel = () => {
         };
       }));
 
-      setMarketData(prev => ({
-        btc: { price: prev.btc.price * (1 + (Math.random() - 0.5) * 0.001), change: prev.btc.change + (Math.random() - 0.5) * 0.1 },
-        eth: { price: prev.eth.price * (1 + (Math.random() - 0.5) * 0.001), change: prev.eth.change + (Math.random() - 0.5) * 0.1 },
-        spy: { price: prev.spy.price * (1 + (Math.random() - 0.5) * 0.0005), change: prev.spy.change + (Math.random() - 0.5) * 0.05 },
-      }));
+      setMarketData(prev => {
+        const update = (p: number, c: number, volatility = 0.001) => ({
+          price: p * (1 + (Math.random() - 0.5) * volatility),
+          change: c + (Math.random() - 0.5) * 0.1
+        });
+        return {
+          btc: update(prev.btc.price, prev.btc.change),
+          eth: update(prev.eth.price, prev.eth.change),
+          sol: update(prev.sol.price, prev.sol.change, 0.002),
+          bnb: update(prev.bnb.price, prev.bnb.change),
+          xrp: update(prev.xrp.price, prev.xrp.change),
+          avax: update(prev.avax.price, prev.avax.change, 0.0015),
+          doge: update(prev.doge.price, prev.doge.change, 0.002),
+          link: update(prev.link.price, prev.link.change),
+        };
+      });
     }, 2000);
 
     return () => clearInterval(interval);
@@ -73,9 +89,9 @@ const LiveTradingPanel = () => {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.4 }}
+      initial={{ opacity: 0, y: 20, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ delay: 0.4, type: "spring", stiffness: 100 }}
       className="bg-card rounded-2xl border border-border overflow-hidden"
     >
       {/* Header */}
@@ -107,22 +123,51 @@ const LiveTradingPanel = () => {
         </Button>
       </div>
 
-      {/* Market Ticker */}
-      <div className="flex items-center gap-6 px-6 py-3 bg-muted/30 border-b border-border overflow-x-auto">
-        {[
-          { label: 'BTC', ...marketData.btc },
-          { label: 'ETH', ...marketData.eth },
-          { label: 'SPY', ...marketData.spy },
-        ].map((item, index) => (
-          <div key={index} className="flex items-center gap-2 whitespace-nowrap">
-            <span className="text-xs text-muted-foreground">{item.label}</span>
-            <span className="text-sm font-medium">${item.price.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
-            <span className={`text-xs flex items-center ${item.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-              {item.change >= 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-              {Math.abs(item.change).toFixed(2)}%
-            </span>
-          </div>
-        ))}
+      {/* Market Ticker - Scrolling Animation */}
+      <div className="relative overflow-hidden bg-muted/30 border-b border-border">
+        <motion.div 
+          className="flex items-center gap-6 px-6 py-3"
+          animate={{ x: [0, -50, 0] }}
+          transition={{ repeat: Infinity, duration: 20, ease: "linear" }}
+        >
+          {[
+            { label: 'BTC', ...marketData.btc },
+            { label: 'ETH', ...marketData.eth },
+            { label: 'SOL', ...marketData.sol },
+            { label: 'BNB', ...marketData.bnb },
+            { label: 'XRP', ...marketData.xrp },
+            { label: 'AVAX', ...marketData.avax },
+            { label: 'DOGE', ...marketData.doge },
+            { label: 'LINK', ...marketData.link },
+          ].map((item, index) => (
+            <motion.div 
+              key={index} 
+              className="flex items-center gap-2 whitespace-nowrap"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05 }}
+              whileHover={{ scale: 1.05 }}
+            >
+              <span className="text-xs text-muted-foreground font-medium">{item.label}</span>
+              <motion.span 
+                className="text-sm font-medium"
+                key={item.price}
+                initial={{ opacity: 0.7 }}
+                animate={{ opacity: 1 }}
+              >
+                ${item.price.toLocaleString(undefined, { maximumFractionDigits: item.price < 1 ? 4 : 2 })}
+              </motion.span>
+              <motion.span 
+                className={`text-xs flex items-center ${item.change >= 0 ? 'text-green-400' : 'text-red-400'}`}
+                animate={Math.abs(item.change) > 3 ? { scale: [1, 1.1, 1] } : {}}
+                transition={{ duration: 0.5 }}
+              >
+                {item.change >= 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                {Math.abs(item.change).toFixed(2)}%
+              </motion.span>
+            </motion.div>
+          ))}
+        </motion.div>
       </div>
 
       {/* Open Positions */}
