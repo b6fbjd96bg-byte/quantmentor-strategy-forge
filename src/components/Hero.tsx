@@ -27,7 +27,7 @@ const Hero = () => {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/50 border border-border/50 backdrop-blur-sm mb-8"
           >
             <Zap className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium text-foreground">Fully Autonomous AI Trading</span>
+            <span className="text-sm font-medium text-foreground">Algorithmic Trading Made Simple</span>
           </motion.div>
 
           {/* Headline */}
@@ -37,8 +37,8 @@ const Hero = () => {
             transition={{ duration: 0.7, delay: 0.1 }}
             className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6"
           >
-            Let AI Trade For You{' '}
-            <span className="text-gradient-primary">Across All Markets</span>
+            Automate Your Trading{' '}
+            <span className="text-gradient-primary">Strategy With AI</span>
           </motion.h1>
 
           {/* Subheadline */}
@@ -48,8 +48,8 @@ const Hero = () => {
             transition={{ duration: 0.7, delay: 0.2 }}
             className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto mb-10"
           >
-            Zero effort required. Our AI executes trades 24/7 using pre-built, battle-tested strategies 
-            in stocks, forex, crypto, and commodities—with speed, precision, and discipline.
+            Turn your trading ideas into automated strategies. No coding required. 
+            Your funds stay in your brokerage account—we just execute the trades you design.
           </motion.p>
 
           {/* CTAs */}
@@ -60,12 +60,12 @@ const Hero = () => {
             className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16"
           >
             <Button variant="hero" size="xl" className="group">
-              Submit Your Strategy
+              Start Free Trial
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Button>
             <Button variant="heroOutline" size="xl" className="group">
               <Play className="w-5 h-5" />
-              Watch Demo
+              See How It Works
             </Button>
           </motion.div>
 
@@ -77,9 +77,9 @@ const Hero = () => {
             className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-3xl mx-auto"
           >
             {[
-              { icon: BarChart3, value: '$2.4B+', label: 'Assets Under Automation' },
-              { icon: Zap, value: '<1ms', label: 'Average Execution Speed' },
-              { icon: Shield, value: '99.99%', label: 'System Uptime' },
+              { icon: BarChart3, value: '15,000+', label: 'Strategies Deployed' },
+              { icon: Zap, value: 'Sub-second', label: 'Trade Execution' },
+              { icon: Shield, value: 'Non-Custodial', label: 'Your Funds, Your Control' },
             ].map((stat, index) => (
               <motion.div
                 key={stat.label}

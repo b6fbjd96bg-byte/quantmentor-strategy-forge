@@ -3,27 +3,27 @@ import { TrendingUp, Users, Globe, Award } from 'lucide-react';
 
 const metrics = [
   { 
-    value: '156%', 
-    label: 'Average Annual Return',
-    sublabel: 'Top performing strategies',
-    icon: TrendingUp,
-  },
-  { 
-    value: '12,500+', 
-    label: 'Active Traders',
-    sublabel: 'Across 85+ countries',
+    value: '2,400+', 
+    label: 'Active Users',
+    sublabel: 'Traders using the platform',
     icon: Users,
   },
   { 
-    value: '50+', 
-    label: 'Broker Integrations',
-    sublabel: 'Global market access',
+    value: '18', 
+    label: 'Supported Brokers',
+    sublabel: 'And growing monthly',
     icon: Globe,
   },
   { 
-    value: '8 Years', 
-    label: 'Track Record',
-    sublabel: 'Proven performance',
+    value: '99.5%', 
+    label: 'Uptime',
+    sublabel: 'System reliability',
+    icon: TrendingUp,
+  },
+  { 
+    value: '3 Years', 
+    label: 'In Operation',
+    sublabel: 'Serving traders since 2022',
     icon: Award,
   },
 ];
@@ -44,25 +44,24 @@ const Performance = () => {
             transition={{ duration: 0.7 }}
           >
             <span className="inline-block text-sm font-semibold text-primary uppercase tracking-wider mb-4">
-              Performance Analytics
+              Transparent Analytics
             </span>
             <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
-              Data-Driven Results You Can{' '}
-              <span className="text-gradient-primary">Trust</span>
+              Track Every Trade,{' '}
+              <span className="text-gradient-primary">Understand Your Results</span>
             </h2>
             <p className="text-lg text-muted-foreground mb-8">
-              Our platform delivers transparent, verifiable performance metrics. 
-              Track every trade, analyze every decision, and optimize your returns 
-              with comprehensive analytics dashboards.
+              No black boxes. Every trade is logged with full details—entry, exit, 
+              P&L, and the exact rules that triggered it. Export your data anytime.
             </p>
 
             {/* Feature List */}
             <ul className="space-y-4">
               {[
-                'Real-time P&L tracking and portfolio analytics',
-                'Detailed trade-by-trade performance breakdown',
-                'Risk-adjusted return metrics (Sharpe, Sortino, Max DD)',
-                'Comparative benchmarking against market indices',
+                'Complete trade history with timestamps and prices',
+                'Performance metrics: win rate, average gain/loss, drawdown',
+                'Strategy comparison to help you improve over time',
+                'Exportable reports for your own analysis',
               ].map((item, index) => (
                 <motion.li
                   key={index}

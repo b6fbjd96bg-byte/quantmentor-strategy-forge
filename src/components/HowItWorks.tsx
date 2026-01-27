@@ -5,26 +5,26 @@ const steps = [
   {
     icon: FileText,
     step: '01',
-    title: 'Submit Your Strategy',
-    description: 'Describe your trading logic in plain English. No coding knowledge needed—just your market insights and rules.',
+    title: 'Describe Your Strategy',
+    description: 'Tell us your trading rules in plain English. What triggers a buy? When do you sell? What are your risk limits?',
   },
   {
     icon: Cpu,
     step: '02',
-    title: 'AI Converts to Algorithm',
-    description: 'Our developers and AI systems transform your strategy into production-ready, optimized trading algorithms.',
+    title: 'We Build & Review Together',
+    description: 'Our team converts your rules into code. You review everything before going live—no surprises.',
   },
   {
     icon: TestTube2,
     step: '03',
-    title: 'Backtest & Optimize',
-    description: 'Rigorous historical backtesting validates performance. We fine-tune parameters for maximum efficiency.',
+    title: 'Backtest on Historical Data',
+    description: 'See how your strategy would have performed. Adjust parameters until you\'re satisfied with the results.',
   },
   {
     icon: Rocket,
     step: '04',
-    title: 'Deploy & Monitor',
-    description: 'Go live with secure broker integrations. Real-time monitoring and risk controls protect your capital.',
+    title: 'Connect & Go Live',
+    description: 'Link your brokerage account via API. Your strategy starts executing trades automatically based on your rules.',
   },
 ];
 
@@ -47,11 +47,11 @@ const HowItWorks = () => {
             How It Works
           </span>
           <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
-            From Idea to <span className="text-gradient-primary">Automated Trading</span> in 4 Steps
+            From Idea to <span className="text-gradient-primary">Live Trading</span> in 4 Steps
           </h2>
           <p className="text-lg text-muted-foreground">
-            We handle the complexity so you can focus on strategy. Our streamlined process 
-            takes you from concept to live trading with expert support at every stage.
+            You focus on the strategy. We handle the technical implementation. 
+            Full transparency at every step so you stay in control.
           </p>
         </motion.div>
 

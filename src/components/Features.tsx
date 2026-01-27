@@ -15,50 +15,50 @@ import {
 const features = [
   {
     icon: Bot,
-    title: 'Fully Autonomous Trading',
-    description: 'Sit back and relax. Our AI takes all trades for you using pre-made, proven strategies—no manual intervention needed.',
+    title: 'Rule-Based Automation',
+    description: 'Define your entry and exit rules. Our system executes them automatically—no need to watch charts all day.',
     color: 'primary',
   },
   {
     icon: TrendingUp,
-    title: 'All Market Coverage',
-    description: 'Trade stocks, forex, crypto, commodities, and indices—all from one platform with AI handling every market.',
+    title: 'Multi-Market Support',
+    description: 'Trade stocks, forex, crypto, and commodities from one dashboard. Connect your preferred brokers.',
     color: 'accent',
   },
   {
     icon: Brain,
-    title: 'AI Decision Engine',
-    description: 'Advanced machine learning analyzes market conditions in real-time, making intelligent entry and exit decisions.',
+    title: 'Strategy Builder',
+    description: 'Describe your strategy in plain English or use our visual builder. We convert it to executable code.',
     color: 'primary',
   },
   {
     icon: Shield,
-    title: 'Advanced Risk Management',
-    description: 'Dynamic position sizing, stop-losses, and exposure limits protect your capital through volatile markets.',
+    title: 'Built-in Risk Controls',
+    description: 'Set stop-losses, position limits, and daily loss caps. Your rules are enforced automatically.',
     color: 'accent',
   },
   {
     icon: BarChart3,
-    title: 'Pre-Built Strategies',
-    description: 'Choose from battle-tested strategies developed by quant experts, or submit your own custom approach.',
+    title: 'Backtest Before You Trade',
+    description: 'Test your strategy against historical data. See potential performance before risking real capital.',
     color: 'primary',
   },
   {
     icon: Zap,
-    title: 'Ultra-Low Latency',
-    description: 'Co-located servers ensure sub-millisecond execution speeds, capturing opportunities before they vanish.',
+    title: 'Fast Execution',
+    description: 'Direct broker API connections ensure your trades are placed quickly when conditions are met.',
     color: 'accent',
   },
   {
     icon: Lock,
-    title: 'Secure Broker Integration',
-    description: 'Bank-level encryption and API connections with 50+ leading brokers worldwide.',
+    title: 'Non-Custodial Security',
+    description: 'We never hold your funds. Your money stays in your brokerage account at all times.',
     color: 'primary',
   },
   {
     icon: Clock,
-    title: '24/7 Autonomous Operation',
-    description: 'AI trades around the clock across global markets—you never miss an opportunity while you sleep.',
+    title: '24/7 Monitoring',
+    description: 'Your strategies run around the clock. Get alerts when trades execute or conditions change.',
     color: 'accent',
   },
 ];
@@ -82,15 +82,15 @@ const Features = () => {
           className="text-center max-w-3xl mx-auto mb-16 lg:mb-20"
         >
           <span className="inline-block text-sm font-semibold text-primary uppercase tracking-wider mb-4">
-            AI-Powered Features
+            Platform Features
           </span>
           <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
-            Nothing To Do.{' '}
-            <span className="text-gradient-accent">AI Does It All.</span>
+            Tools That Help You{' '}
+            <span className="text-gradient-accent">Trade Smarter</span>
           </h2>
           <p className="text-lg text-muted-foreground">
-            Our AI handles every aspect of trading—from analysis to execution—across all markets, 
-            using proven strategies that work while you focus on what matters.
+            Everything you need to automate your trading strategy—from backtesting 
+            to live execution—with complete control over your capital.
           </p>
         </motion.div>
 
