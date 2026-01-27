@@ -20,34 +20,34 @@ const CTA = () => {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/50 border border-border/50 backdrop-blur-sm mb-8">
             <Sparkles className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium text-foreground">Start Today - No Coding Required</span>
+            <span className="text-sm font-medium text-foreground">14-Day Free Trial • No Credit Card</span>
           </div>
           
           {/* Headline */}
           <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold mb-6">
-            Ready to <span className="text-gradient-primary">Automate</span> Your Trading?
+            Ready to Try <span className="text-gradient-primary">Automated Trading</span>?
           </h2>
           
           {/* Subheadline */}
           <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
-            Join thousands of traders who have transformed their strategies into 
-            24/7 automated trading systems. Your edge, our execution.
+            Start with a free trial. Test your strategy on paper trading first. 
+            Go live only when you're confident. Your funds, your control.
           </p>
           
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button variant="hero" size="xl" className="group">
-              Submit Your Strategy
+              Start Free Trial
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Button>
             <Button variant="glass" size="xl">
-              Schedule a Demo
+              Talk to Our Team
             </Button>
           </div>
           
           {/* Trust Line */}
           <p className="text-sm text-muted-foreground mt-8">
-            Free strategy consultation • No credit card required • Live in 48 hours
+            Free strategy consultation • Paper trading included • Cancel anytime
           </p>
         </motion.div>
       </div>

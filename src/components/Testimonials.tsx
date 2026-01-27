@@ -3,27 +3,27 @@ import { Star, Quote } from 'lucide-react';
 
 const testimonials = [
   {
-    name: 'Michael Chen',
-    role: 'Hedge Fund Manager',
-    company: 'Apex Capital',
+    name: 'James R.',
+    role: 'Day Trader',
+    company: 'Trading for 5 years',
     image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face',
-    quote: 'QuantMentor transformed our systematic trading operations. Their AI-powered execution reduced our slippage by 40% and improved overall returns significantly.',
+    quote: 'I was skeptical at first, but being able to backtest my strategy before going live gave me confidence. The automation saves me hours of screen time each day.',
     rating: 5,
   },
   {
-    name: 'Sarah Williams',
-    role: 'Independent Trader',
-    company: 'Full-time Trader',
+    name: 'Maria S.',
+    role: 'Part-time Investor',
+    company: 'Uses QuantMentor since 2024',
     image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face',
-    quote: 'I had a profitable manual strategy but couldn\'t trade 24/7. QuantMentor automated everything perfectly. Now I sleep while my algorithms work.',
+    quote: 'I have a full-time job and couldn\'t monitor markets constantly. Now my strategy runs automatically while I work. The risk controls give me peace of mind.',
     rating: 5,
   },
   {
-    name: 'David Kumar',
-    role: 'CTO',
-    company: 'Quantum Investments',
+    name: 'Robert K.',
+    role: 'Crypto Enthusiast',
+    company: 'Self-directed trader',
     image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
-    quote: 'The backtesting engine is incredibly robust. We tested 200+ strategy variations before going live. That confidence was invaluable for our institutional clients.',
+    quote: 'What I appreciate most is that my funds never leave my exchange. I set my rules, test them, and let the system execute. No hidden fees eating into my trades.',
     rating: 5,
   },
 ];
@@ -44,14 +44,14 @@ const Testimonials = () => {
           className="text-center max-w-3xl mx-auto mb-16 lg:mb-20"
         >
           <span className="inline-block text-sm font-semibold text-primary uppercase tracking-wider mb-4">
-            Testimonials
+            User Stories
           </span>
           <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
-            Trusted by <span className="text-gradient-primary">Professionals</span>
+            Real Traders, <span className="text-gradient-primary">Real Experiences</span>
           </h2>
           <p className="text-lg text-muted-foreground">
-            From retail traders to institutional funds, see why traders worldwide 
-            choose QuantMentor for algorithmic trading.
+            Hear from traders who use QuantMentor to automate their strategies. 
+            Results vary based on market conditions and individual strategies.
           </p>
         </motion.div>
 
