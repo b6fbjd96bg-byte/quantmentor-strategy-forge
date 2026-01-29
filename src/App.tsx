@@ -14,6 +14,11 @@ import LiveTrading from "./pages/LiveTrading";
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
 import TradeJournal from "./pages/TradeJournal";
+import CapitalAllocation from "./pages/CapitalAllocation";
+import CapitalAllocationStart from "./pages/CapitalAllocationStart";
+import CapitalAllocationDashboard from "./pages/CapitalAllocationDashboard";
+import CapitalAllocationAnalytics from "./pages/CapitalAllocationAnalytics";
+import CapitalAllocationMethodology from "./pages/CapitalAllocationMethodology";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +39,12 @@ const App = () => (
           <Route path="/trade-journal" element={<TradeJournal />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/settings" element={<Settings />} />
+          {/* Capital Allocation Engine */}
+          <Route path="/capital-allocation" element={<CapitalAllocation />} />
+          <Route path="/capital-allocation/start" element={<CapitalAllocationStart />} />
+          <Route path="/capital-allocation/dashboard" element={<CapitalAllocationDashboard />} />
+          <Route path="/capital-allocation/analytics" element={<CapitalAllocationAnalytics />} />
+          <Route path="/capital-allocation/methodology" element={<CapitalAllocationMethodology />} />
           {/* Product Pages */}
           <Route path="/api-documentation" element={<ComingSoon />} />
           {/* Company Pages */}
