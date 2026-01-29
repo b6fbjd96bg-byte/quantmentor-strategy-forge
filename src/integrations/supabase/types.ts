@@ -14,6 +14,113 @@ export type Database = {
   }
   public: {
     Tables: {
+      allocation_history: {
+        Row: {
+          allocation_id: string
+          created_at: string
+          cumulative_pnl: number
+          cumulative_pnl_percentage: number
+          daily_pnl: number
+          daily_pnl_percentage: number
+          drawdown: number
+          id: string
+          max_drawdown: number
+          snapshot_date: string
+          strategy_distribution: Json
+          total_value: number
+          volatility_index: number
+        }
+        Insert: {
+          allocation_id: string
+          created_at?: string
+          cumulative_pnl?: number
+          cumulative_pnl_percentage?: number
+          daily_pnl?: number
+          daily_pnl_percentage?: number
+          drawdown?: number
+          id?: string
+          max_drawdown?: number
+          snapshot_date?: string
+          strategy_distribution?: Json
+          total_value: number
+          volatility_index?: number
+        }
+        Update: {
+          allocation_id?: string
+          created_at?: string
+          cumulative_pnl?: number
+          cumulative_pnl_percentage?: number
+          daily_pnl?: number
+          daily_pnl_percentage?: number
+          drawdown?: number
+          id?: string
+          max_drawdown?: number
+          snapshot_date?: string
+          strategy_distribution?: Json
+          total_value?: number
+          volatility_index?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "allocation_history_allocation_id_fkey"
+            columns: ["allocation_id"]
+            isOneToOne: false
+            referencedRelation: "capital_allocations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      capital_allocations: {
+        Row: {
+          capital_amount: number
+          created_at: string
+          current_value: number
+          high_water_mark: number
+          id: string
+          lock_end_date: string | null
+          lock_in_days: number | null
+          performance_fee_rate: number
+          platform_fee_rate: number
+          risk_profile: Database["public"]["Enums"]["risk_profile"]
+          status: Database["public"]["Enums"]["allocation_status"]
+          total_fees_paid: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          capital_amount: number
+          created_at?: string
+          current_value?: number
+          high_water_mark?: number
+          id?: string
+          lock_end_date?: string | null
+          lock_in_days?: number | null
+          performance_fee_rate?: number
+          platform_fee_rate?: number
+          risk_profile?: Database["public"]["Enums"]["risk_profile"]
+          status?: Database["public"]["Enums"]["allocation_status"]
+          total_fees_paid?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          capital_amount?: number
+          created_at?: string
+          current_value?: number
+          high_water_mark?: number
+          id?: string
+          lock_end_date?: string | null
+          lock_in_days?: number | null
+          performance_fee_rate?: number
+          platform_fee_rate?: number
+          risk_profile?: Database["public"]["Enums"]["risk_profile"]
+          status?: Database["public"]["Enums"]["allocation_status"]
+          total_fees_paid?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -52,6 +159,121 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      qualified_strategies: {
+        Row: {
+          correlation_factor: number
+          created_at: string
+          description: string | null
+          disqualification_reason: string | null
+          execution_quality_score: number
+          id: string
+          is_qualified: boolean
+          live_trading_days: number
+          markets: string[]
+          max_drawdown: number
+          name: string
+          qualification_date: string | null
+          risk_score: number
+          sharpe_ratio: number
+          slippage_score: number
+          sortino_ratio: number
+          strategy_id: string | null
+          strategy_type: string
+          updated_at: string
+        }
+        Insert: {
+          correlation_factor?: number
+          created_at?: string
+          description?: string | null
+          disqualification_reason?: string | null
+          execution_quality_score?: number
+          id?: string
+          is_qualified?: boolean
+          live_trading_days?: number
+          markets: string[]
+          max_drawdown?: number
+          name: string
+          qualification_date?: string | null
+          risk_score?: number
+          sharpe_ratio?: number
+          slippage_score?: number
+          sortino_ratio?: number
+          strategy_id?: string | null
+          strategy_type: string
+          updated_at?: string
+        }
+        Update: {
+          correlation_factor?: number
+          created_at?: string
+          description?: string | null
+          disqualification_reason?: string | null
+          execution_quality_score?: number
+          id?: string
+          is_qualified?: boolean
+          live_trading_days?: number
+          markets?: string[]
+          max_drawdown?: number
+          name?: string
+          qualification_date?: string | null
+          risk_score?: number
+          sharpe_ratio?: number
+          slippage_score?: number
+          sortino_ratio?: number
+          strategy_id?: string | null
+          strategy_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qualified_strategies_strategy_id_fkey"
+            columns: ["strategy_id"]
+            isOneToOne: false
+            referencedRelation: "strategies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      risk_control_events: {
+        Row: {
+          allocation_id: string
+          created_at: string
+          event_description: string
+          event_type: string
+          id: string
+          new_exposure: number | null
+          previous_exposure: number | null
+          triggered_by: string
+        }
+        Insert: {
+          allocation_id: string
+          created_at?: string
+          event_description: string
+          event_type: string
+          id?: string
+          new_exposure?: number | null
+          previous_exposure?: number | null
+          triggered_by: string
+        }
+        Update: {
+          allocation_id?: string
+          created_at?: string
+          event_description?: string
+          event_type?: string
+          id?: string
+          new_exposure?: number | null
+          previous_exposure?: number | null
+          triggered_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "risk_control_events_allocation_id_fkey"
+            columns: ["allocation_id"]
+            isOneToOne: false
+            referencedRelation: "capital_allocations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       strategies: {
         Row: {
@@ -112,6 +334,60 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      strategy_allocations: {
+        Row: {
+          allocated_capital: number
+          allocation_id: string
+          allocation_percentage: number
+          created_at: string
+          current_value: number
+          id: string
+          profit_loss: number
+          profit_loss_percentage: number
+          qualified_strategy_id: string
+          updated_at: string
+        }
+        Insert: {
+          allocated_capital?: number
+          allocation_id: string
+          allocation_percentage?: number
+          created_at?: string
+          current_value?: number
+          id?: string
+          profit_loss?: number
+          profit_loss_percentage?: number
+          qualified_strategy_id: string
+          updated_at?: string
+        }
+        Update: {
+          allocated_capital?: number
+          allocation_id?: string
+          allocation_percentage?: number
+          created_at?: string
+          current_value?: number
+          id?: string
+          profit_loss?: number
+          profit_loss_percentage?: number
+          qualified_strategy_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "strategy_allocations_allocation_id_fkey"
+            columns: ["allocation_id"]
+            isOneToOne: false
+            referencedRelation: "capital_allocations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "strategy_allocations_qualified_strategy_id_fkey"
+            columns: ["qualified_strategy_id"]
+            isOneToOne: false
+            referencedRelation: "qualified_strategies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       trade_journal: {
         Row: {
@@ -202,7 +478,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      allocation_status: "pending" | "active" | "paused" | "withdrawn"
+      risk_profile: "conservative" | "balanced" | "aggressive"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -329,6 +606,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      allocation_status: ["pending", "active", "paused", "withdrawn"],
+      risk_profile: ["conservative", "balanced", "aggressive"],
+    },
   },
 } as const
