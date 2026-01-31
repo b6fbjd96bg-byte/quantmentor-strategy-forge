@@ -30,6 +30,7 @@ import PerformanceChart from '@/components/dashboard/PerformanceChart';
 import QuickActions from '@/components/dashboard/QuickActions';
 import MarketOverview from '@/components/dashboard/MarketOverview';
 import TradingViewChat from '@/components/dashboard/TradingViewChat';
+import AIStockAnalyzer from '@/components/dashboard/AIStockAnalyzer';
 
 interface Strategy {
   id: string;
@@ -272,9 +273,14 @@ const Dashboard = () => {
           <MarketOverview />
         </div>
 
-        {/* Main Grid - Row 2.5: TradingView Chat */}
+        {/* Main Grid - Row 2.5: AI Analyzer & Chat */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <AIStockAnalyzer />
           <TradingViewChat />
+        </div>
+
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <QuickActions />
         </div>
 
