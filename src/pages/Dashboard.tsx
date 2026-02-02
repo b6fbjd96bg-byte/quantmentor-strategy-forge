@@ -31,6 +31,9 @@ import QuickActions from '@/components/dashboard/QuickActions';
 import MarketOverview from '@/components/dashboard/MarketOverview';
 import TradingViewChat from '@/components/dashboard/TradingViewChat';
 import AIStockAnalyzer from '@/components/dashboard/AIStockAnalyzer';
+import StrategyBotCard from '@/components/dashboard/StrategyBotCard';
+import BotTradesTable from '@/components/dashboard/BotTradesTable';
+import BacktestChart from '@/components/dashboard/BacktestChart';
 
 interface Strategy {
   id: string;
@@ -46,10 +49,44 @@ interface Profile {
   email: string | null;
 }
 
+interface StrategyBot {
+  id: string;
+  name: string;
+  status: string;
+  broker: string;
+  ai_analysis: string | null;
+  indicators: any[];
+  entry_logic: string | null;
+  exit_logic: string | null;
+  created_at: string;
+  backtest?: any;
+}
+
+interface BotTrade {
+  id: string;
+  symbol: string;
+  side: string;
+  trade_type: string;
+  entry_price: number;
+  exit_price: number | null;
+  quantity: number;
+  profit_loss: number;
+  profit_loss_percentage: number;
+  status: string;
+  entry_time: string;
+  exit_time: string | null;
+  broker: string;
+  entry_reason: string | null;
+  exit_reason: string | null;
+}
+
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [strategies, setStrategies] = useState<Strategy[]>([]);
+  const [bots, setBots] = useState<StrategyBot[]>([]);
+  const [trades, setTrades] = useState<BotTrade[]>([]);
+  const [selectedBacktest, setSelectedBacktest] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const navigate = useNavigate();
@@ -77,13 +114,39 @@ const Dashboard = () => {
   const fetchData = async (userId: string) => {
     setIsLoading(true);
     try {
-      const [profileRes, strategiesRes] = await Promise.all([
+      const [profileRes, strategiesRes, botsRes, tradesRes] = await Promise.all([
         supabase.from('profiles').select('full_name, email').eq('user_id', userId).maybeSingle(),
         supabase.from('strategies').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
+        supabase.from('strategy_bots').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
+        supabase.from('bot_trades').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(20),
       ]);
 
       if (profileRes.data) setProfile(profileRes.data);
       if (strategiesRes.data) setStrategies(strategiesRes.data);
+      if (tradesRes.data) setTrades(tradesRes.data as BotTrade[]);
+
+      // Fetch backtests for each bot
+      if (botsRes.data) {
+        const botsWithBacktests = await Promise.all(
+          botsRes.data.map(async (bot: any) => {
+            const { data: backtest } = await supabase
+              .from('backtest_results')
+              .select('*')
+              .eq('bot_id', bot.id)
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .maybeSingle();
+            return { ...bot, backtest };
+          })
+        );
+        setBots(botsWithBacktests as StrategyBot[]);
+        
+        // Set the first bot's backtest as selected if available
+        const firstBacktest = botsWithBacktests.find(b => b.backtest)?.backtest;
+        if (firstBacktest) {
+          setSelectedBacktest(firstBacktest);
+        }
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -97,12 +160,45 @@ const Dashboard = () => {
     navigate('/');
   };
 
-  const mockStats = {
-    totalProfit: 12847.32,
-    profitChange: 8.4,
-    winRate: 73.2,
-    totalTrades: 1284,
-    activeBots: 3,
+  const handleActivateBot = async (botId: string) => {
+    const { error } = await supabase
+      .from('strategy_bots')
+      .update({ status: 'running' })
+      .eq('id', botId);
+    
+    if (error) {
+      toast.error('Failed to activate bot');
+    } else {
+      toast.success('Bot activated! Paper trading started.');
+      setBots(prev => prev.map(b => b.id === botId ? { ...b, status: 'running' } : b));
+    }
+  };
+
+  const handlePauseBot = async (botId: string) => {
+    const { error } = await supabase
+      .from('strategy_bots')
+      .update({ status: 'paused' })
+      .eq('id', botId);
+    
+    if (error) {
+      toast.error('Failed to pause bot');
+    } else {
+      toast.success('Bot paused');
+      setBots(prev => prev.map(b => b.id === botId ? { ...b, status: 'paused' } : b));
+    }
+  };
+
+  // Calculate stats from real data
+  const totalProfit = trades.reduce((sum, t) => sum + (t.profit_loss || 0), 0);
+  const winningTrades = trades.filter(t => t.profit_loss > 0).length;
+  const winRate = trades.length > 0 ? (winningTrades / trades.length) * 100 : 0;
+  const activeBots = bots.filter(b => b.status === 'running').length;
+
+  const stats = {
+    totalProfit,
+    winRate,
+    totalTrades: trades.length,
+    activeBots,
   };
 
   const getStatusColor = (status: string) => {
@@ -110,6 +206,7 @@ const Dashboard = () => {
       case 'active': return 'bg-accent/20 text-accent';
       case 'pending': return 'bg-yellow-500/20 text-yellow-400';
       case 'paused': return 'bg-muted text-muted-foreground';
+      case 'processing': return 'bg-primary/20 text-primary';
       default: return 'bg-primary/20 text-primary';
     }
   };
@@ -143,10 +240,10 @@ const Dashboard = () => {
         <nav className="flex-1 space-y-2">
           {[
             { icon: BarChart3, label: 'Dashboard', active: true, href: '/dashboard' },
-            { icon: Bot, label: 'AI Strategies', href: '/coming-soon' },
-            { icon: LineChart, label: 'Live Trading', href: '/coming-soon' },
-            { icon: PieChart, label: 'Analytics', href: '/coming-soon' },
-            { icon: Settings, label: 'Settings', href: '/coming-soon' },
+            { icon: Bot, label: 'AI Strategies', href: '/ai-strategies' },
+            { icon: LineChart, label: 'Live Trading', href: '/live-trading' },
+            { icon: PieChart, label: 'Analytics', href: '/analytics' },
+            { icon: Settings, label: 'Settings', href: '/settings' },
           ].map((item, index) => (
             <Link
               key={index}
@@ -191,13 +288,13 @@ const Dashboard = () => {
               Welcome back, {profile?.full_name || 'Trader'}
             </h1>
             <p className="text-muted-foreground">
-              Here's what's happening with your trading bots today.
+              Manage your AI trading bots and monitor performance.
             </p>
           </div>
           <Link to="/submit-strategy">
             <Button variant="hero" className="gap-2">
               <Plus className="w-5 h-5" />
-              New Strategy
+              Create Bot
             </Button>
           </Link>
         </div>
@@ -206,34 +303,34 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {[
             {
-              label: 'Total Profit',
-              value: `$${mockStats.totalProfit.toLocaleString()}`,
-              change: `+${mockStats.profitChange}%`,
-              changePositive: true,
+              label: 'Total P&L',
+              value: `${stats.totalProfit >= 0 ? '+' : ''}$${stats.totalProfit.toFixed(2)}`,
+              change: trades.length > 0 ? `${trades.length} trades` : 'No trades yet',
+              changePositive: stats.totalProfit >= 0,
               icon: DollarSign,
               color: 'primary',
             },
             {
               label: 'Win Rate',
-              value: `${mockStats.winRate}%`,
-              change: '+2.1%',
-              changePositive: true,
+              value: `${stats.winRate.toFixed(1)}%`,
+              change: `${winningTrades}/${trades.length} winning`,
+              changePositive: stats.winRate >= 50,
               icon: Target,
               color: 'accent',
             },
             {
               label: 'Total Trades',
-              value: mockStats.totalTrades.toLocaleString(),
-              change: '+128 this week',
+              value: stats.totalTrades.toString(),
+              change: 'Across all bots',
               changePositive: true,
               icon: Activity,
               color: 'primary',
             },
             {
               label: 'Active Bots',
-              value: mockStats.activeBots.toString(),
-              change: 'All running',
-              changePositive: true,
+              value: stats.activeBots.toString(),
+              change: `${bots.length} total bots`,
+              changePositive: stats.activeBots > 0,
               icon: Bot,
               color: 'accent',
             },
@@ -258,6 +355,60 @@ const Dashboard = () => {
             </motion.div>
           ))}
         </div>
+
+        {/* Trading Bots Section */}
+        {bots.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="mb-8"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-display text-xl font-bold flex items-center gap-2">
+                <Bot className="w-5 h-5 text-primary" />
+                Your Trading Bots
+              </h2>
+              <Link to="/submit-strategy" className="text-sm text-primary hover:text-primary/80 font-medium flex items-center gap-1">
+                + Create New <ChevronRight className="w-4 h-4" />
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {bots.map((bot) => (
+                <StrategyBotCard
+                  key={bot.id}
+                  bot={bot as any}
+                  onActivate={handleActivateBot}
+                  onPause={handlePauseBot}
+                />
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Backtest Results */}
+        {selectedBacktest && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="mb-8"
+          >
+            <BacktestChart result={selectedBacktest} />
+          </motion.div>
+        )}
+
+        {/* Bot Trades */}
+        {trades.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="mb-8"
+          >
+            <BotTradesTable trades={trades} />
+          </motion.div>
+        )}
 
         {/* Main Grid - Row 1 */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -284,7 +435,7 @@ const Dashboard = () => {
           <QuickActions />
         </div>
 
-        {/* Main Grid - Row 3: Strategies */}
+        {/* Strategies List */}
         <motion.div
           initial={{ opacity: 0, y: 20, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -311,7 +462,7 @@ const Dashboard = () => {
               <Link to="/submit-strategy">
                 <Button variant="outline" size="sm" className="gap-2">
                   <Plus className="w-4 h-4" />
-                  Submit Your First Strategy
+                  Create Your First Trading Bot
                 </Button>
               </Link>
             </div>
@@ -354,17 +505,17 @@ const Dashboard = () => {
                 Ready to automate more trades?
               </h3>
               <p className="text-muted-foreground">
-                Submit a new strategy or use our pre-built AI strategies to start trading.
+                Create a new AI-powered trading bot or use our pre-built strategies.
               </p>
             </div>
             <div className="flex gap-4">
               <Link to="/submit-strategy">
                 <Button variant="hero" className="gap-2">
                   <Plus className="w-5 h-5" />
-                  Custom Strategy
+                  Create Bot
                 </Button>
               </Link>
-              <Link to="/coming-soon">
+              <Link to="/ai-strategies">
                 <Button variant="heroOutline" className="gap-2">
                   <Bot className="w-5 h-5" />
                   AI Strategies

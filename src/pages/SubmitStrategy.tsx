@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,9 +16,13 @@ import {
   Clock,
   DollarSign,
   AlertTriangle,
-  CheckCircle2
+  CheckCircle2,
+  Loader2,
+  Bot
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const steps = [
   { id: 1, title: 'Strategy Overview', icon: Target },
@@ -28,39 +32,53 @@ const steps = [
 ];
 
 const marketOptions = [
-  'US Stocks', 'Indian Stocks (NSE/BSE)', 'Forex', 'Cryptocurrencies', 
-  'Commodities', 'Futures & Options', 'ETFs'
+  { label: 'Binance (Crypto)', value: 'binance' },
+  { label: 'Delta Exchange (Crypto Derivatives)', value: 'delta' },
+  { label: 'Bybit (Crypto)', value: 'bybit' },
+  { label: 'Kucoin (Crypto)', value: 'kucoin' },
+  { label: 'Zerodha (Indian Stocks)', value: 'zerodha' },
+  { label: 'Upstox (Indian Stocks)', value: 'upstox' },
+  { label: 'Interactive Brokers (US Stocks)', value: 'ibkr' },
+  { label: 'Alpaca (US Stocks)', value: 'alpaca' },
+  { label: 'OANDA (Forex)', value: 'oanda' },
+  { label: 'Paper Trading (Demo)', value: 'paper' },
 ];
 
 const timeframeOptions = [
-  'Scalping (< 5 min)', 'Intraday (5-60 min)', 'Swing (1-5 days)', 
-  'Positional (1-4 weeks)', 'Long-term (> 1 month)'
+  'Scalping (1-5 min)', 'Intraday (15-60 min)', 'Swing (4H-1D)', 
+  'Positional (1D-1W)', 'Long-term (1W+)'
 ];
 
 const SubmitStrategy = () => {
   const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [botResult, setBotResult] = useState<any>(null);
+  const [user, setUser] = useState<any>(null);
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
-    // Step 1
     strategyName: '',
     description: '',
     markets: [] as string[],
     timeframe: '',
-    // Step 2
     entryRules: '',
     exitRules: '',
     indicators: '',
-    // Step 3
-    maxRiskPerTrade: '',
-    maxDailyLoss: '',
+    maxRiskPerTrade: '1',
+    maxDailyLoss: '3',
     positionSizing: '',
     stopLossType: '',
     takeProfitType: '',
-    // Contact
-    name: '',
-    email: '',
-    phone: '',
   });
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setUser(session.user);
+      }
+    });
+  }, []);
 
   const updateFormData = (field: string, value: string | string[]) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -83,8 +101,102 @@ const SubmitStrategy = () => {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
 
-  const handleSubmit = () => {
-    setIsSubmitted(true);
+  const handleSubmit = async () => {
+    if (!user) {
+      toast.error('Please log in to submit a strategy');
+      navigate('/auth');
+      return;
+    }
+
+    if (!formData.strategyName || !formData.entryRules || !formData.exitRules) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // First, save the strategy to the database
+      const { data: strategy, error: strategyError } = await supabase
+        .from('strategies')
+        .insert({
+          user_id: user.id,
+          name: formData.strategyName,
+          description: formData.description,
+          strategy_type: 'custom',
+          markets: formData.markets,
+          timeframe: formData.timeframe,
+          entry_rules: formData.entryRules,
+          exit_rules: formData.exitRules,
+          risk_per_trade: parseFloat(formData.maxRiskPerTrade) || 1,
+          max_daily_loss: parseFloat(formData.maxDailyLoss) || 3,
+          stop_loss_type: formData.stopLossType,
+          take_profit_type: formData.takeProfitType,
+          max_positions: 5,
+          status: 'processing',
+        })
+        .select()
+        .single();
+
+      if (strategyError) {
+        console.error('Strategy save error:', strategyError);
+        throw new Error('Failed to save strategy');
+      }
+
+      toast.success('Strategy saved! AI is now generating your trading bot...');
+
+      // Call the AI processor edge function
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/process-strategy`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({
+            strategy: {
+              strategyId: strategy.id,
+              name: formData.strategyName,
+              description: formData.description,
+              markets: formData.markets,
+              timeframe: formData.timeframe,
+              entryRules: formData.entryRules,
+              exitRules: formData.exitRules,
+              indicators: formData.indicators,
+              riskPerTrade: formData.maxRiskPerTrade,
+              maxDailyLoss: formData.maxDailyLoss,
+              stopLossType: formData.stopLossType,
+              takeProfitType: formData.takeProfitType,
+              positionSizing: formData.positionSizing,
+            },
+            userId: user.id,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to process strategy');
+      }
+
+      const result = await response.json();
+      setBotResult(result);
+
+      // Update strategy status to active
+      await supabase
+        .from('strategies')
+        .update({ status: 'active' })
+        .eq('id', strategy.id);
+
+      setIsSubmitted(true);
+      toast.success('Trading bot created successfully!');
+    } catch (error) {
+      console.error('Submit error:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to create trading bot');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (isSubmitted) {
@@ -97,18 +209,51 @@ const SubmitStrategy = () => {
           className="text-center max-w-lg"
         >
           <div className="w-24 h-24 rounded-full bg-accent/20 flex items-center justify-center mx-auto mb-6">
-            <CheckCircle2 className="w-12 h-12 text-accent" />
+            <Bot className="w-12 h-12 text-accent" />
           </div>
           <h1 className="text-3xl font-bold text-foreground mb-4">
-            Strategy Submitted Successfully!
+            Trading Bot Created!
           </h1>
-          <p className="text-muted-foreground mb-8">
-            Our team of expert quantitative developers will review your strategy 
-            and get back to you within 24-48 hours with a detailed analysis and next steps.
+          <p className="text-muted-foreground mb-6">
+            Your AI-powered trading bot has been generated based on your strategy. 
+            View it on your dashboard to start paper trading or connect a broker.
           </p>
-          <div className="space-y-4">
-            <Link to="/">
-              <Button variant="hero" size="lg" className="w-full">
+
+          {botResult && (
+            <div className="bg-card rounded-xl border border-border p-4 mb-6 text-left">
+              <h3 className="font-semibold text-foreground mb-3">Backtest Summary</h3>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-muted-foreground">Win Rate:</span>
+                  <p className="font-bold text-accent">{botResult.backtestSummary?.winRate?.toFixed(1)}%</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">P&L:</span>
+                  <p className={`font-bold ${botResult.backtestSummary?.profitLoss >= 0 ? 'text-accent' : 'text-destructive'}`}>
+                    ${botResult.backtestSummary?.profitLoss?.toFixed(0)}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Total Trades:</span>
+                  <p className="font-bold text-foreground">{botResult.backtestSummary?.totalTrades}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Max Drawdown:</span>
+                  <p className="font-bold text-destructive">-{botResult.backtestSummary?.maxDrawdown?.toFixed(1)}%</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-3">
+            <Link to="/dashboard" className="block">
+              <Button variant="hero" size="lg" className="w-full gap-2">
+                <Bot className="w-5 h-5" />
+                View My Bot
+              </Button>
+            </Link>
+            <Link to="/" className="block">
+              <Button variant="outline" size="lg" className="w-full">
                 Return to Homepage
               </Button>
             </Link>
@@ -153,18 +298,16 @@ const SubmitStrategy = () => {
             className="text-center mb-12"
           >
             <h1 className="text-4xl lg:text-5xl font-bold text-foreground mb-4">
-              Submit Your <span className="text-gradient-primary">Strategy</span>
+              Create Your <span className="text-gradient-primary">Trading Bot</span>
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Describe your trading strategy and let our AI-powered platform transform it 
-              into a fully automated trading algorithm.
+              Describe your trading strategy and our AI will transform it into an automated trading bot with backtesting.
             </p>
           </motion.div>
 
           {/* Progress Steps */}
           <div className="mb-12">
             <div className="flex items-center justify-between relative">
-              {/* Progress Line */}
               <div className="absolute top-6 left-0 right-0 h-0.5 bg-border">
                 <motion.div
                   className="h-full bg-gradient-primary"
@@ -260,21 +403,21 @@ const SubmitStrategy = () => {
                     </div>
 
                     <div>
-                      <Label>Target Markets *</Label>
-                      <p className="text-sm text-muted-foreground mb-3">Select all that apply</p>
+                      <Label>Target Brokers/Exchanges *</Label>
+                      <p className="text-sm text-muted-foreground mb-3">Select where you want to trade</p>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                         {marketOptions.map((market) => (
                           <button
-                            key={market}
+                            key={market.value}
                             type="button"
-                            onClick={() => toggleMarket(market)}
+                            onClick={() => toggleMarket(market.value)}
                             className={`px-4 py-3 rounded-lg text-sm font-medium border transition-all ${
-                              formData.markets.includes(market)
+                              formData.markets.includes(market.value)
                                 ? 'bg-primary/20 border-primary text-primary'
                                 : 'bg-secondary border-border text-foreground hover:border-primary/50'
                             }`}
                           >
-                            {market}
+                            {market.label}
                           </button>
                         ))}
                       </div>
@@ -366,9 +509,8 @@ const SubmitStrategy = () => {
                       <div>
                         <h4 className="font-semibold text-foreground mb-1">Pro Tip</h4>
                         <p className="text-sm text-muted-foreground">
-                          The more specific your entry and exit rules, the better we can optimize 
-                          your algorithm. Include exact indicator values, timeframes, and conditions 
-                          when possible.
+                          The more specific your entry and exit rules, the better the AI can generate your bot. 
+                          Include exact indicator values, timeframes, and conditions when possible.
                         </p>
                       </div>
                     </div>
@@ -400,11 +542,12 @@ const SubmitStrategy = () => {
                     <div>
                       <Label htmlFor="maxRiskPerTrade" className="flex items-center gap-2">
                         <DollarSign className="w-4 h-4 text-primary" />
-                        Max Risk Per Trade
+                        Max Risk Per Trade (%)
                       </Label>
                       <Input
                         id="maxRiskPerTrade"
-                        placeholder="e.g., 1% of capital, or ₹5,000"
+                        type="number"
+                        placeholder="e.g., 1"
                         value={formData.maxRiskPerTrade}
                         onChange={(e) => updateFormData('maxRiskPerTrade', e.target.value)}
                         className="mt-2 bg-secondary border-border"
@@ -414,11 +557,12 @@ const SubmitStrategy = () => {
                     <div>
                       <Label htmlFor="maxDailyLoss" className="flex items-center gap-2">
                         <AlertTriangle className="w-4 h-4 text-destructive" />
-                        Max Daily Loss Limit
+                        Max Daily Loss (%)
                       </Label>
                       <Input
                         id="maxDailyLoss"
-                        placeholder="e.g., 3% of capital, or ₹15,000"
+                        type="number"
+                        placeholder="e.g., 3"
                         value={formData.maxDailyLoss}
                         onChange={(e) => updateFormData('maxDailyLoss', e.target.value)}
                         className="mt-2 bg-secondary border-border"
@@ -491,10 +635,10 @@ const SubmitStrategy = () => {
                   <div>
                     <h2 className="text-2xl font-bold text-foreground mb-2 flex items-center gap-2">
                       <CheckCircle2 className="w-6 h-6 text-primary" />
-                      Review & Submit
+                      Review & Create Bot
                     </h2>
                     <p className="text-muted-foreground">
-                      Review your strategy details and provide your contact information.
+                      Review your strategy details. Our AI will analyze and create your trading bot.
                     </p>
                   </div>
 
@@ -514,65 +658,52 @@ const SubmitStrategy = () => {
                         <p className="text-foreground font-medium">{formData.timeframe || 'Not selected'}</p>
                       </div>
                       <div className="md:col-span-2">
-                        <span className="text-muted-foreground">Markets:</span>
+                        <span className="text-muted-foreground">Brokers/Exchanges:</span>
                         <p className="text-foreground font-medium">
-                          {formData.markets.length > 0 ? formData.markets.join(', ') : 'None selected'}
+                          {formData.markets.length > 0 
+                            ? formData.markets.map(m => marketOptions.find(o => o.value === m)?.label).join(', ')
+                            : 'None selected'}
                         </p>
                       </div>
-                    </div>
-                  </div>
-
-                  {/* Contact Information */}
-                  <div className="space-y-4">
-                    <h3 className="font-semibold text-foreground">Contact Information</h3>
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="name">Full Name *</Label>
-                        <Input
-                          id="name"
-                          placeholder="Your name"
-                          value={formData.name}
-                          onChange={(e) => updateFormData('name', e.target.value)}
-                          className="mt-2 bg-secondary border-border"
-                        />
+                      <div className="md:col-span-2">
+                        <span className="text-muted-foreground">Entry Rules:</span>
+                        <p className="text-foreground font-medium line-clamp-2">{formData.entryRules || 'Not provided'}</p>
                       </div>
-                      <div>
-                        <Label htmlFor="phone">Phone Number</Label>
-                        <Input
-                          id="phone"
-                          placeholder="+91 XXXXXXXXXX"
-                          value={formData.phone}
-                          onChange={(e) => updateFormData('phone', e.target.value)}
-                          className="mt-2 bg-secondary border-border"
-                        />
+                      <div className="md:col-span-2">
+                        <span className="text-muted-foreground">Exit Rules:</span>
+                        <p className="text-foreground font-medium line-clamp-2">{formData.exitRules || 'Not provided'}</p>
                       </div>
-                    </div>
-                    <div>
-                      <Label htmlFor="email">Email Address *</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="your@email.com"
-                        value={formData.email}
-                        onChange={(e) => updateFormData('email', e.target.value)}
-                        className="mt-2 bg-secondary border-border"
-                      />
                     </div>
                   </div>
 
                   <div className="bg-card rounded-xl p-4 border border-border">
                     <div className="flex items-start gap-3">
-                      <Clock className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                      <Bot className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                       <div className="text-sm text-muted-foreground">
                         <p className="font-medium text-foreground mb-1">What happens next?</p>
                         <ul className="space-y-1">
-                          <li>• Our quant team reviews your strategy within 24-48 hours</li>
-                          <li>• We'll schedule a call to discuss optimization opportunities</li>
-                          <li>• Receive a detailed feasibility report and cost estimate</li>
+                          <li>• AI analyzes your strategy and generates trading bot logic</li>
+                          <li>• Automatic backtesting on historical data</li>
+                          <li>• Bot is ready for paper trading immediately</li>
+                          <li>• Connect your broker when ready for live trading</li>
                         </ul>
                       </div>
                     </div>
                   </div>
+
+                  {!user && (
+                    <div className="bg-yellow-500/10 rounded-xl p-4 border border-yellow-500/30">
+                      <div className="flex items-center gap-3">
+                        <AlertTriangle className="w-5 h-5 text-yellow-400" />
+                        <div>
+                          <p className="font-medium text-yellow-400">Login Required</p>
+                          <p className="text-sm text-muted-foreground">
+                            Please <Link to="/auth" className="text-primary hover:underline">log in</Link> to create your trading bot.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -582,7 +713,7 @@ const SubmitStrategy = () => {
               <Button
                 variant="ghost"
                 onClick={prevStep}
-                disabled={currentStep === 1}
+                disabled={currentStep === 1 || isSubmitting}
                 className="flex items-center gap-2"
               >
                 <ArrowLeft className="w-4 h-4" />
@@ -602,10 +733,20 @@ const SubmitStrategy = () => {
                 <Button
                   variant="hero"
                   onClick={handleSubmit}
+                  disabled={isSubmitting || !user}
                   className="flex items-center gap-2"
                 >
-                  Submit Strategy
-                  <Check className="w-4 h-4" />
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Creating Bot...
+                    </>
+                  ) : (
+                    <>
+                      <Bot className="w-4 h-4" />
+                      Create Trading Bot
+                    </>
+                  )}
                 </Button>
               )}
             </div>
