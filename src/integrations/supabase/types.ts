@@ -70,6 +70,205 @@ export type Database = {
           },
         ]
       }
+      backtest_results: {
+        Row: {
+          bot_id: string | null
+          created_at: string
+          end_date: string
+          equity_curve: Json | null
+          final_capital: number | null
+          id: string
+          initial_capital: number
+          losing_trades: number | null
+          max_drawdown: number | null
+          profit_loss: number | null
+          profit_loss_percentage: number | null
+          sharpe_ratio: number | null
+          start_date: string
+          symbol: string
+          timeframe: string
+          total_trades: number | null
+          trade_log: Json | null
+          user_id: string
+          win_rate: number | null
+          winning_trades: number | null
+        }
+        Insert: {
+          bot_id?: string | null
+          created_at?: string
+          end_date: string
+          equity_curve?: Json | null
+          final_capital?: number | null
+          id?: string
+          initial_capital?: number
+          losing_trades?: number | null
+          max_drawdown?: number | null
+          profit_loss?: number | null
+          profit_loss_percentage?: number | null
+          sharpe_ratio?: number | null
+          start_date: string
+          symbol: string
+          timeframe: string
+          total_trades?: number | null
+          trade_log?: Json | null
+          user_id: string
+          win_rate?: number | null
+          winning_trades?: number | null
+        }
+        Update: {
+          bot_id?: string | null
+          created_at?: string
+          end_date?: string
+          equity_curve?: Json | null
+          final_capital?: number | null
+          id?: string
+          initial_capital?: number
+          losing_trades?: number | null
+          max_drawdown?: number | null
+          profit_loss?: number | null
+          profit_loss_percentage?: number | null
+          sharpe_ratio?: number | null
+          start_date?: string
+          symbol?: string
+          timeframe?: string
+          total_trades?: number | null
+          trade_log?: Json | null
+          user_id?: string
+          win_rate?: number | null
+          winning_trades?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "backtest_results_bot_id_fkey"
+            columns: ["bot_id"]
+            isOneToOne: false
+            referencedRelation: "strategy_bots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bot_trades: {
+        Row: {
+          bot_id: string | null
+          broker: string
+          created_at: string
+          entry_price: number
+          entry_reason: string | null
+          entry_time: string
+          exit_price: number | null
+          exit_reason: string | null
+          exit_time: string | null
+          id: string
+          indicators_at_entry: Json | null
+          order_id: string | null
+          profit_loss: number | null
+          profit_loss_percentage: number | null
+          quantity: number
+          side: string
+          status: string
+          symbol: string
+          trade_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bot_id?: string | null
+          broker: string
+          created_at?: string
+          entry_price: number
+          entry_reason?: string | null
+          entry_time?: string
+          exit_price?: number | null
+          exit_reason?: string | null
+          exit_time?: string | null
+          id?: string
+          indicators_at_entry?: Json | null
+          order_id?: string | null
+          profit_loss?: number | null
+          profit_loss_percentage?: number | null
+          quantity: number
+          side: string
+          status?: string
+          symbol: string
+          trade_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bot_id?: string | null
+          broker?: string
+          created_at?: string
+          entry_price?: number
+          entry_reason?: string | null
+          entry_time?: string
+          exit_price?: number | null
+          exit_reason?: string | null
+          exit_time?: string | null
+          id?: string
+          indicators_at_entry?: Json | null
+          order_id?: string | null
+          profit_loss?: number | null
+          profit_loss_percentage?: number | null
+          quantity?: number
+          side?: string
+          status?: string
+          symbol?: string
+          trade_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bot_trades_bot_id_fkey"
+            columns: ["bot_id"]
+            isOneToOne: false
+            referencedRelation: "strategy_bots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      broker_connections: {
+        Row: {
+          api_key_encrypted: string | null
+          api_secret_encrypted: string | null
+          broker: string
+          connection_status: string | null
+          created_at: string
+          id: string
+          is_connected: boolean | null
+          is_paper_trading: boolean | null
+          last_synced_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          api_key_encrypted?: string | null
+          api_secret_encrypted?: string | null
+          broker: string
+          connection_status?: string | null
+          created_at?: string
+          id?: string
+          is_connected?: boolean | null
+          is_paper_trading?: boolean | null
+          last_synced_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          api_key_encrypted?: string | null
+          api_secret_encrypted?: string | null
+          broker?: string
+          connection_status?: string | null
+          created_at?: string
+          id?: string
+          is_connected?: boolean | null
+          is_paper_trading?: boolean | null
+          last_synced_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       capital_allocations: {
         Row: {
           capital_amount: number
@@ -385,6 +584,71 @@ export type Database = {
             columns: ["qualified_strategy_id"]
             isOneToOne: false
             referencedRelation: "qualified_strategies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      strategy_bots: {
+        Row: {
+          ai_analysis: string | null
+          bot_config: Json | null
+          broker: string
+          created_at: string
+          entry_logic: string | null
+          error_message: string | null
+          exit_logic: string | null
+          generated_code: string | null
+          id: string
+          indicators: Json | null
+          name: string
+          risk_params: Json | null
+          status: string
+          strategy_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ai_analysis?: string | null
+          bot_config?: Json | null
+          broker?: string
+          created_at?: string
+          entry_logic?: string | null
+          error_message?: string | null
+          exit_logic?: string | null
+          generated_code?: string | null
+          id?: string
+          indicators?: Json | null
+          name: string
+          risk_params?: Json | null
+          status?: string
+          strategy_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ai_analysis?: string | null
+          bot_config?: Json | null
+          broker?: string
+          created_at?: string
+          entry_logic?: string | null
+          error_message?: string | null
+          exit_logic?: string | null
+          generated_code?: string | null
+          id?: string
+          indicators?: Json | null
+          name?: string
+          risk_params?: Json | null
+          status?: string
+          strategy_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "strategy_bots_strategy_id_fkey"
+            columns: ["strategy_id"]
+            isOneToOne: false
+            referencedRelation: "strategies"
             referencedColumns: ["id"]
           },
         ]

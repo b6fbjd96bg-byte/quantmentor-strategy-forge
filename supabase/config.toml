@@ -2,3 +2,6 @@ project_id = "idhwokthhdbvdemnydlj"
 
 [functions.analyze-stock]
 verify_jwt = false
+
+[functions.process-strategy]
+verify_jwt = false
