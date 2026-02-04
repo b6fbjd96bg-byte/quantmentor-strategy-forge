@@ -8,10 +8,12 @@ import Testimonials from '@/components/Testimonials';
 import Pricing from '@/components/Pricing';
 import CTA from '@/components/CTA';
 import Footer from '@/components/Footer';
+import DisclaimerBanner from '@/components/DisclaimerBanner';
 
 const Index = () => {
   return (
     <div className="min-h-screen bg-background">
+      <DisclaimerBanner />
       <Navbar />
       <Hero />
       <HowItWorks />
