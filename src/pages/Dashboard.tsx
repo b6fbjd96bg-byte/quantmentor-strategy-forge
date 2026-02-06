@@ -31,7 +31,6 @@ import QuickActions from '@/components/dashboard/QuickActions';
 import MarketOverview from '@/components/dashboard/MarketOverview';
 import TradingViewChat from '@/components/dashboard/TradingViewChat';
 import AIStockAnalyzer from '@/components/dashboard/AIStockAnalyzer';
-import TradingViewChartAI from '@/components/dashboard/TradingViewChartAI';
 import StrategyBotCard from '@/components/dashboard/StrategyBotCard';
 import BotTradesTable from '@/components/dashboard/BotTradesTable';
 import BacktestChart from '@/components/dashboard/BacktestChart';
@@ -241,6 +240,7 @@ const Dashboard = () => {
         <nav className="flex-1 space-y-2">
           {[
             { icon: BarChart3, label: 'Dashboard', active: true, href: '/dashboard' },
+            { icon: TrendingUp, label: 'Chart Analysis', href: '/chart-analysis' },
             { icon: Bot, label: 'AI Strategies', href: '/ai-strategies' },
             { icon: LineChart, label: 'Live Trading', href: '/live-trading' },
             { icon: PieChart, label: 'Analytics', href: '/analytics' },
@@ -423,11 +423,6 @@ const Dashboard = () => {
             <PerformanceChart />
           </div>
           <MarketOverview />
-        </div>
-
-        {/* TradingView Chart with AI Prediction */}
-        <div className="mb-6">
-          <TradingViewChartAI />
         </div>
 
         {/* Main Grid - Row 2.5: AI Analyzer & Chat */}
