@@ -14,6 +14,7 @@ import LiveTrading from "./pages/LiveTrading";
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
 import TradeJournal from "./pages/TradeJournal";
+import ChartAnalysis from "./pages/ChartAnalysis";
 import CapitalAllocation from "./pages/CapitalAllocation";
 import CapitalAllocationStart from "./pages/CapitalAllocationStart";
 import CapitalAllocationDashboard from "./pages/CapitalAllocationDashboard";
@@ -35,6 +36,7 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           {/* Dashboard Sub-pages */}
           <Route path="/ai-strategies" element={<AIStrategies />} />
+          <Route path="/chart-analysis" element={<ChartAnalysis />} />
           <Route path="/live-trading" element={<LiveTrading />} />
           <Route path="/trade-journal" element={<TradeJournal />} />
           <Route path="/analytics" element={<Analytics />} />
