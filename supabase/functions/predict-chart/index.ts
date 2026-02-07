@@ -5,23 +5,28 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
+interface MessageContent {
+  type: string;
+  text?: string;
+  image_url?: { url: string };
+}
+
 interface Message {
   role: 'user' | 'assistant' | 'system';
-  content: string;
+  content: string | MessageContent[];
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    const { symbol, assetType, messages, currentPrice, priceChange, chartTimeframe } = await req.json();
+    const { messages, imageBase64 } = await req.json();
 
-    if (!symbol) {
+    if (!messages || messages.length === 0) {
       return new Response(
-        JSON.stringify({ error: 'Symbol is required' }),
+        JSON.stringify({ error: 'Messages are required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -31,69 +36,81 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    // Build conversation history
-    const conversationHistory: Message[] = messages || [];
-    
-    // Create enhanced system prompt for accurate trading analysis
-    const systemPrompt = `You are an elite AI trading analyst with expertise in technical analysis, price action, and market psychology. You provide highly accurate, actionable trading insights based on chart analysis.
+    const systemPrompt = `You are an elite AI trading analyst specializing in visual chart analysis. You analyze screenshots of TradingView charts and provide highly accurate, actionable trading insights.
 
-## Current Market Context:
-- **Symbol**: ${symbol}
-- **Asset Type**: ${assetType || 'Unknown'}
-- **Current Price**: ${currentPrice || 'Check chart'}
-- **Price Change**: ${priceChange || 'Check chart'}
-- **Chart Timeframe**: ${chartTimeframe || '1D'}
+## Your Capabilities:
+- Visually identify chart patterns (Head & Shoulders, Double Tops/Bottoms, Triangles, Flags, Wedges, Cup & Handle, etc.)
+- Read and interpret technical indicators visible on the chart (RSI, MACD, Moving Averages, Bollinger Bands, Volume, etc.)
+- Identify support and resistance levels from the visual chart
+- Detect candlestick patterns (Doji, Engulfing, Hammer, Shooting Star, etc.)
+- Analyze trend structure (higher highs/lows, break of structure, change of character)
+- Identify Fibonacci retracement/extension levels
 
-## Your Analysis Framework:
+## Analysis Framework:
+When analyzing a chart screenshot, provide:
 
-### 1. Chart Pattern Recognition
-Identify and analyze: Head & Shoulders, Double/Triple Tops/Bottoms, Ascending/Descending Triangles, Bull/Bear Flags, Pennants, Wedges, Cup & Handle, Inverse Cup & Handle, Rounding Bottoms, Diamond patterns.
+### 1. 📊 Chart Overview
+- Symbol/Asset identified (if visible)
+- Timeframe detected
+- Current market structure (trending/ranging)
 
-### 2. Technical Indicators Analysis
-- **RSI (Relative Strength Index)**: Overbought (>70), Oversold (<30), Divergences
-- **MACD**: Signal line crossovers, histogram momentum, divergences
-- **Moving Averages**: 20/50/100/200 EMA/SMA crossovers, support/resistance
-- **Bollinger Bands**: Squeeze patterns, breakouts, mean reversion
-- **Volume**: Confirmation of moves, accumulation/distribution
+### 2. 🔍 Pattern Recognition  
+- Chart patterns identified with confidence level
+- Key candlestick formations
+- Volume analysis
 
-### 3. Price Action Analysis
-- **Candlestick Patterns**: Doji, Engulfing, Hammer, Shooting Star, Morning/Evening Star
-- **Support/Resistance Levels**: Historical pivots, psychological levels, Fibonacci retracements
-- **Trend Analysis**: Higher highs/lows, lower highs/lows, trend channels
-- **Market Structure**: Break of structure (BOS), change of character (CHoCH)
+### 3. 📈 Technical Indicators
+- RSI reading and interpretation
+- MACD signal
+- Moving average positions
+- Any other visible indicators
 
-### 4. Recommendation Format
-Always provide:
-- **Recommendation**: BUY / SELL / HOLD with confidence level (%)
+### 4. 🎯 Trade Setup
+- **Recommendation**: BUY / SELL / HOLD with confidence (%)
 - **Entry Zone**: Specific price range
-- **Stop Loss**: With reasoning (below support, ATR-based, etc.)
-- **Take Profit Targets**: TP1, TP2, TP3 with risk:reward ratios
-- **Timeframe**: Expected duration for the trade
-- **Risk Level**: Low / Medium / High
+- **Stop Loss**: With reasoning
+- **Take Profit**: TP1, TP2, TP3 with risk:reward ratios
+- **Timeframe**: Expected duration
+
+### 5. ⚠️ Risk Assessment
+- Risk level (Low / Medium / High)
+- Key invalidation levels
+- Potential catalysts
 
 ## Guidelines:
-1. Be specific with exact price levels when possible
-2. Always explain your reasoning clearly
-3. Acknowledge uncertainty when the setup isn't clear
-4. Consider multiple timeframe analysis
-5. Factor in overall market conditions
-6. Mention key upcoming catalysts (earnings, events) when relevant
-7. Be willing to debate and adjust based on user feedback
-8. ALWAYS include the disclaimer that this is educational, not financial advice
+1. Be extremely specific about what you SEE in the chart
+2. Reference exact visual elements (candles, lines, indicators visible)
+3. Acknowledge if chart quality is poor or elements are hard to read
+4. Always include disclaimer: educational purposes only, not financial advice
+5. Be willing to debate and reconsider based on user counter-arguments
+6. Use emojis for visual scanning: 📈 📉 🎯 ⚠️ 💡 🔥 ⛔
 
-## Response Style:
-- Use markdown formatting for clarity
-- Include relevant emojis (📈 📉 🎯 ⚠️ 💡 🔥 ⛔)
-- Keep responses comprehensive but scannable
-- Prioritize actionable information`;
+When no image is provided, you can still discuss trading concepts, analyze described setups, and answer trading questions conversationally.`;
 
-    // Prepare messages for the AI
-    const aiMessages = [
-      { role: 'system' as const, content: systemPrompt },
-      ...conversationHistory
+    // Build AI messages - handle image content for vision
+    const aiMessages: Message[] = [
+      { role: 'system', content: systemPrompt }
     ];
 
-    console.log(`Processing prediction for ${symbol}, messages: ${conversationHistory.length}`);
+    for (const msg of messages) {
+      if (msg.role === 'user' && msg.imageBase64) {
+        // Multimodal message with image
+        aiMessages.push({
+          role: 'user',
+          content: [
+            { type: 'text', text: msg.content || 'Please analyze this chart screenshot.' },
+            {
+              type: 'image_url',
+              image_url: { url: `data:image/png;base64,${msg.imageBase64}` }
+            }
+          ]
+        });
+      } else {
+        aiMessages.push({ role: msg.role, content: msg.content });
+      }
+    }
+
+    console.log(`Processing chart analysis, messages: ${messages.length}, hasImage: ${!!imageBase64}`);
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -102,7 +119,7 @@ Always provide:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-3-flash-preview',
+        model: 'google/gemini-2.5-flash',
         messages: aiMessages,
         stream: true,
       }),
@@ -126,7 +143,6 @@ Always provide:
       throw new Error(`AI Gateway error: ${response.status}`);
     }
 
-    // Return streaming response
     return new Response(response.body, {
       headers: {
         ...corsHeaders,

@@ -1,167 +1,122 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Search, 
   Send, 
-  TrendingUp, 
-  TrendingDown,
   Bot,
-  RefreshCw,
-  ChevronDown,
-  Maximize2,
-  Minimize2,
-  MessageCircle,
+  Loader2,
+  Upload,
+  Image as ImageIcon,
+  X,
   Sparkles,
-  Clock,
-  BarChart3,
-  Loader2
+  Trash2,
+  MessageCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
 
-interface Message {
+interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
+  imagePreview?: string;
   timestamp: Date;
 }
 
-const ASSET_TYPES = [
-  { value: 'stock', label: 'Stocks', exchange: 'NASDAQ' },
-  { value: 'crypto', label: 'Crypto', exchange: 'BINANCE' },
-  { value: 'forex', label: 'Forex', exchange: 'FX' },
-  { value: 'futures', label: 'Futures', exchange: 'CME' },
-];
-
-const TIMEFRAMES = [
-  { value: '1', label: '1m' },
-  { value: '5', label: '5m' },
-  { value: '15', label: '15m' },
-  { value: '60', label: '1H' },
-  { value: '240', label: '4H' },
-  { value: 'D', label: '1D' },
-  { value: 'W', label: '1W' },
-];
-
-const POPULAR_SYMBOLS = {
-  stock: ['AAPL', 'TSLA', 'GOOGL', 'MSFT', 'NVDA', 'META', 'AMZN'],
-  crypto: ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT', 'XRPUSDT', 'DOGEUSDT'],
-  forex: ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD'],
-  futures: ['ES1!', 'NQ1!', 'GC1!', 'CL1!', 'ZB1!'],
-};
-
 const TradingViewChartAI = () => {
-  const [symbol, setSymbol] = useState('BTCUSDT');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [assetType, setAssetType] = useState('crypto');
-  const [timeframe, setTimeframe] = useState('D');
-  const [isExpanded, setIsExpanded] = useState(true);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [streamingContent, setStreamingContent] = useState('');
-  const [showSymbolSearch, setShowSymbolSearch] = useState(false);
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [imageBase64, setImageBase64] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const chartContainerRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Get exchange based on asset type
-  const getExchange = () => {
-    const asset = ASSET_TYPES.find(a => a.value === assetType);
-    return asset?.exchange || 'BINANCE';
-  };
-
-  // Build TradingView widget symbol
-  const getTradingViewSymbol = () => {
-    const exchange = getExchange();
-    if (assetType === 'crypto') {
-      return `BINANCE:${symbol}`;
-    } else if (assetType === 'forex') {
-      return `FX:${symbol}`;
-    } else if (assetType === 'futures') {
-      return `CME_MINI:${symbol}`;
-    }
-    return `NASDAQ:${symbol}`;
-  };
-
-  // Initialize TradingView widget
-  useEffect(() => {
-    if (!chartContainerRef.current) return;
-
-    // Clear previous widget
-    chartContainerRef.current.innerHTML = '';
-
-    // Create TradingView widget
-    const script = document.createElement('script');
-    script.src = 'https://s3.tradingview.com/tv.js';
-    script.async = true;
-    script.onload = () => {
-      if (typeof (window as any).TradingView !== 'undefined') {
-        new (window as any).TradingView.widget({
-          container_id: 'tradingview_chart',
-          symbol: getTradingViewSymbol(),
-          interval: timeframe,
-          timezone: 'Etc/UTC',
-          theme: 'dark',
-          style: '1',
-          locale: 'en',
-          toolbar_bg: '#0a0a0a',
-          enable_publishing: false,
-          hide_top_toolbar: false,
-          hide_side_toolbar: false,
-          allow_symbol_change: true,
-          save_image: true,
-          studies: ['RSI@tv-basicstudies', 'MACD@tv-basicstudies'],
-          width: '100%',
-          height: 400,
-        });
-      }
-    };
-
-    // Create container for widget
-    const widgetContainer = document.createElement('div');
-    widgetContainer.id = 'tradingview_chart';
-    widgetContainer.style.height = '400px';
-    chartContainerRef.current.appendChild(widgetContainer);
-    chartContainerRef.current.appendChild(script);
-
-    return () => {
-      if (chartContainerRef.current) {
-        chartContainerRef.current.innerHTML = '';
-      }
-    };
-  }, [symbol, assetType, timeframe]);
-
-  // Scroll to bottom on new messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, streamingContent]);
 
-  const handleSymbolChange = (newSymbol: string) => {
-    setSymbol(newSymbol.toUpperCase());
-    setShowSymbolSearch(false);
-    setSearchQuery('');
-    // Clear chat when changing symbols
-    setMessages([]);
-  };
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      handleSymbolChange(searchQuery.trim());
+  const handleFileSelect = useCallback((file: File) => {
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload an image file (PNG, JPG, etc.)');
+      return;
     }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Image must be smaller than 10MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target?.result as string;
+      setUploadedImage(dataUrl);
+      // Extract base64 without the data URL prefix
+      const base64 = dataUrl.split(',')[1];
+      setImageBase64(base64);
+    };
+    reader.readAsDataURL(file);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file) handleFileSelect(file);
+  }, [handleFileSelect]);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  const handlePaste = useCallback((e: React.ClipboardEvent) => {
+    const items = e.clipboardData?.items;
+    if (items) {
+      for (const item of Array.from(items)) {
+        if (item.type.startsWith('image/')) {
+          const file = item.getAsFile();
+          if (file) {
+            handleFileSelect(file);
+            e.preventDefault();
+          }
+        }
+      }
+    }
+  }, [handleFileSelect]);
+
+  const removeImage = () => {
+    setUploadedImage(null);
+    setImageBase64(null);
   };
 
-  const streamChat = async (userMessage: string) => {
-    const newMessages: Message[] = [
-      ...messages,
-      { role: 'user', content: userMessage, timestamp: new Date() }
-    ];
+  const streamChat = async (userMessage: string, userImageBase64?: string | null) => {
+    const newMsg: ChatMessage = {
+      role: 'user',
+      content: userMessage,
+      imagePreview: userImageBase64 ? uploadedImage || undefined : undefined,
+      timestamp: new Date(),
+    };
+    
+    const newMessages = [...messages, newMsg];
     setMessages(newMessages);
     setIsLoading(true);
     setStreamingContent('');
+
+    // Build messages for API - include image data in the user message
+    const apiMessages = newMessages.map(m => {
+      if (m.role === 'user' && m.imagePreview) {
+        // Find the base64 from the data URL  
+        const base64 = m.imagePreview.split(',')[1];
+        return { role: m.role, content: m.content, imageBase64: base64 };
+      }
+      return { role: m.role, content: m.content };
+    });
 
     try {
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/predict-chart`, {
@@ -170,17 +125,12 @@ const TradingViewChartAI = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({
-          symbol,
-          assetType,
-          chartTimeframe: TIMEFRAMES.find(t => t.value === timeframe)?.label || '1D',
-          messages: newMessages.map(m => ({ role: m.role, content: m.content })),
-        }),
+        body: JSON.stringify({ messages: apiMessages }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to get prediction');
+        throw new Error(errorData.error || 'Failed to get analysis');
       }
 
       if (!response.body) throw new Error('No response body');
@@ -222,7 +172,6 @@ const TradingViewChartAI = () => {
         }
       }
 
-      // Add the complete message
       setMessages(prev => [
         ...prev,
         { role: 'assistant', content: fullContent, timestamp: new Date() }
@@ -230,302 +179,286 @@ const TradingViewChartAI = () => {
       setStreamingContent('');
     } catch (error) {
       console.error('Chat error:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to get AI prediction');
+      toast.error(error instanceof Error ? error.message : 'Failed to analyze chart');
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleSendMessage = () => {
-    if (!inputMessage.trim() || isLoading) return;
-    streamChat(inputMessage);
+    if ((!inputMessage.trim() && !imageBase64) || isLoading) return;
+    const message = inputMessage.trim() || 'Please analyze this chart screenshot.';
+    streamChat(message, imageBase64);
     setInputMessage('');
+    removeImage();
   };
 
   const handleQuickPrompt = (prompt: string) => {
-    streamChat(prompt);
+    if (isLoading) return;
+    streamChat(prompt, imageBase64);
+    removeImage();
+  };
+
+  const clearChat = () => {
+    setMessages([]);
+    setStreamingContent('');
+    removeImage();
   };
 
   const quickPrompts = [
-    { label: '📈 Predict Next Move', prompt: `Analyze the ${symbol} chart and predict the next price movement. What's your Buy/Sell/Hold recommendation?` },
-    { label: '🎯 Entry & Exit Points', prompt: `What are the best entry and exit points for ${symbol} right now? Include stop-loss levels.` },
-    { label: '📊 Pattern Analysis', prompt: `What chart patterns do you see forming on ${symbol}? Explain their implications.` },
-    { label: '💪 Support & Resistance', prompt: `Identify key support and resistance levels for ${symbol}.` },
+    { label: '📈 Predict Next Move', prompt: 'Analyze this chart and predict the next price movement. What\'s your Buy/Sell/Hold recommendation?' },
+    { label: '🎯 Entry & Exit', prompt: 'What are the best entry and exit points based on this chart? Include stop-loss levels.' },
+    { label: '📊 Pattern Analysis', prompt: 'What chart patterns do you see forming? Explain their implications and probability.' },
+    { label: '💪 Support & Resistance', prompt: 'Identify all key support and resistance levels visible on this chart.' },
   ];
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-card rounded-2xl border border-border overflow-hidden"
-    >
+    <div className="bg-card rounded-2xl border border-border overflow-hidden flex flex-col" style={{ height: 'calc(100vh - 240px)' }}>
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-border bg-gradient-to-r from-primary/5 via-transparent to-accent/5">
+      <div className="flex items-center justify-between p-4 border-b border-border bg-gradient-to-r from-primary/5 via-transparent to-accent/5 shrink-0">
         <div className="flex items-center gap-3">
           <div className="relative">
-            <BarChart3 className="w-5 h-5 text-primary" />
+            <Bot className="w-5 h-5 text-primary" />
             <motion.span
               animate={{ scale: [1, 1.3, 1], opacity: [1, 0.7, 1] }}
               transition={{ repeat: Infinity, duration: 2 }}
               className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-accent rounded-full"
             />
           </div>
-          <h2 className="font-display text-lg font-bold">AI Chart Analysis</h2>
-          <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full font-medium">
-            {symbol}
-          </span>
+          <h2 className="font-display text-lg font-bold">AI Chart Analyzer</h2>
+          <Sparkles className="w-4 h-4 text-gold" />
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="h-8 w-8 p-0"
-          >
-            {isExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-          </Button>
+          {messages.length > 0 && (
+            <Button variant="ghost" size="sm" onClick={clearChat} className="gap-1 text-xs text-muted-foreground">
+              <Trash2 className="w-3 h-3" />
+              Clear
+            </Button>
+          )}
         </div>
       </div>
 
-      <AnimatePresence mode="wait">
-        {isExpanded && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-          >
-            {/* Symbol Search & Controls */}
-            <div className="p-4 border-b border-border bg-muted/20">
-              <div className="flex flex-wrap gap-3 items-center">
-                {/* Asset Type Tabs */}
-                <div className="flex gap-1 bg-muted/50 rounded-lg p-1">
-                  {ASSET_TYPES.map(asset => (
-                    <button
-                      key={asset.value}
-                      onClick={() => {
-                        setAssetType(asset.value);
-                        const popular = POPULAR_SYMBOLS[asset.value as keyof typeof POPULAR_SYMBOLS];
-                        if (popular?.length) setSymbol(popular[0]);
-                      }}
-                      className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                        assetType === asset.value
-                          ? 'bg-primary text-primary-foreground'
-                          : 'text-muted-foreground hover:text-foreground'
-                      }`}
-                    >
-                      {asset.label}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Symbol Search */}
-                <div className="relative flex-1 min-w-[200px]">
-                  <form onSubmit={handleSearch}>
-                    <Input
-                      placeholder="Search symbol..."
-                      value={searchQuery}
-                      onChange={(e) => {
-                        setSearchQuery(e.target.value);
-                        setShowSymbolSearch(true);
-                      }}
-                      onFocus={() => setShowSymbolSearch(true)}
-                      className="pl-9 bg-background/50"
-                    />
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  </form>
-                  
-                  {/* Symbol Dropdown */}
-                  <AnimatePresence>
-                    {showSymbolSearch && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        className="absolute z-50 top-full mt-1 left-0 right-0 bg-card border border-border rounded-lg shadow-lg p-2 max-h-48 overflow-y-auto"
-                      >
-                        <p className="text-xs text-muted-foreground px-2 mb-2">Popular {ASSET_TYPES.find(a => a.value === assetType)?.label}</p>
-                        <div className="flex flex-wrap gap-1">
-                          {POPULAR_SYMBOLS[assetType as keyof typeof POPULAR_SYMBOLS]?.map(sym => (
-                            <button
-                              key={sym}
-                              onClick={() => handleSymbolChange(sym)}
-                              className={`px-2 py-1 text-xs rounded-md transition-colors ${
-                                symbol === sym
-                                  ? 'bg-primary text-primary-foreground'
-                                  : 'bg-muted/50 hover:bg-muted text-foreground'
-                              }`}
-                            >
-                              {sym}
-                            </button>
-                          ))}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-
-                {/* Timeframe */}
-                <div className="flex gap-1 bg-muted/50 rounded-lg p-1">
-                  {TIMEFRAMES.map(tf => (
-                    <button
-                      key={tf.value}
-                      onClick={() => setTimeframe(tf.value)}
-                      className={`px-2 py-1 text-xs font-medium rounded-md transition-colors ${
-                        timeframe === tf.value
-                          ? 'bg-accent text-accent-foreground'
-                          : 'text-muted-foreground hover:text-foreground'
-                      }`}
-                    >
-                      {tf.label}
-                    </button>
-                  ))}
-                </div>
+      {/* Chat Messages */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.length === 0 && !streamingContent && (
+          <div className="flex flex-col items-center justify-center h-full text-center py-12">
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center mb-4">
+              <ImageIcon className="w-10 h-10 text-primary" />
+            </div>
+            <h3 className="text-lg font-bold mb-2">Upload a Chart Screenshot</h3>
+            <p className="text-sm text-muted-foreground max-w-md mb-6">
+              Take a screenshot of any TradingView chart and the AI will analyze patterns, indicators, 
+              support/resistance levels, and provide actionable trade setups.
+            </p>
+            <div className="grid grid-cols-2 gap-2 w-full max-w-sm mb-6">
+              <div className="p-3 rounded-lg bg-muted/30 text-xs text-muted-foreground">
+                📸 Screenshot or paste chart
+              </div>
+              <div className="p-3 rounded-lg bg-muted/30 text-xs text-muted-foreground">
+                🔍 AI reads patterns & indicators
+              </div>
+              <div className="p-3 rounded-lg bg-muted/30 text-xs text-muted-foreground">
+                🎯 Get entry/exit + stop loss
+              </div>
+              <div className="p-3 rounded-lg bg-muted/30 text-xs text-muted-foreground">
+                💬 Ask follow-up questions
               </div>
             </div>
+            <Button
+              variant="heroOutline"
+              onClick={() => fileInputRef.current?.click()}
+              className="gap-2"
+            >
+              <Upload className="w-4 h-4" />
+              Upload Chart Screenshot
+            </Button>
+          </div>
+        )}
 
-            {/* TradingView Chart */}
-            <div 
-              ref={chartContainerRef} 
-              className="w-full bg-background"
-              onClick={() => setShowSymbolSearch(false)}
-            />
-
-            {/* AI Chat Section */}
-            <div className="border-t border-border">
-              <div className="p-4 border-b border-border bg-gradient-to-r from-accent/5 to-primary/5">
-                <div className="flex items-center gap-2 mb-3">
-                  <Bot className="w-5 h-5 text-accent" />
-                  <span className="font-medium">AI Trading Assistant</span>
-                  <Sparkles className="w-4 h-4 text-gold" />
-                </div>
-                
-                {/* Quick Prompts */}
-                <div className="flex flex-wrap gap-2">
-                  {quickPrompts.map((qp, idx) => (
-                    <motion.button
-                      key={idx}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => handleQuickPrompt(qp.prompt)}
-                      disabled={isLoading}
-                      className="px-3 py-1.5 text-xs bg-muted/50 hover:bg-muted rounded-full transition-colors disabled:opacity-50"
-                    >
-                      {qp.label}
-                    </motion.button>
-                  ))}
-                </div>
+        {messages.map((msg, idx) => (
+          <motion.div
+            key={idx}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+          >
+            {msg.role === 'assistant' && (
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-accent to-primary flex items-center justify-center shrink-0">
+                <Bot className="w-4 h-4 text-white" />
               </div>
-
-              {/* Chat Messages */}
-              <div className="h-64 overflow-y-auto p-4 space-y-4">
-                {messages.length === 0 && !streamingContent && (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Bot className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                    <p className="text-sm">Ask me to analyze the {symbol} chart!</p>
-                    <p className="text-xs mt-1">I can predict moves, identify patterns, and suggest trade setups.</p>
-                  </div>
-                )}
-
-                {messages.map((msg, idx) => (
-                  <motion.div
-                    key={idx}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    {msg.role === 'assistant' && (
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-accent to-primary flex items-center justify-center shrink-0">
-                        <Bot className="w-4 h-4 text-white" />
-                      </div>
-                    )}
-                    <div className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-                      msg.role === 'user'
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted/50'
-                    }`}>
-                      {msg.role === 'assistant' ? (
-                        <div className="prose prose-sm prose-invert max-w-none">
-                          <ReactMarkdown>{msg.content}</ReactMarkdown>
-                        </div>
-                      ) : (
-                        <p className="text-sm">{msg.content}</p>
-                      )}
-                      <p className="text-xs opacity-50 mt-1">
-                        {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </p>
-                    </div>
-                    {msg.role === 'user' && (
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shrink-0">
-                        <span className="text-xs font-bold text-white">You</span>
-                      </div>
-                    )}
-                  </motion.div>
-                ))}
-
-                {/* Streaming message */}
-                {streamingContent && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex gap-3"
-                  >
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-accent to-primary flex items-center justify-center shrink-0">
-                      <Bot className="w-4 h-4 text-white" />
-                    </div>
-                    <div className="max-w-[80%] rounded-2xl px-4 py-3 bg-muted/50">
-                      <div className="prose prose-sm prose-invert max-w-none">
-                        <ReactMarkdown>{streamingContent}</ReactMarkdown>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-
-                {isLoading && !streamingContent && (
-                  <div className="flex gap-3">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-accent to-primary flex items-center justify-center">
-                      <Bot className="w-4 h-4 text-white" />
-                    </div>
-                    <div className="bg-muted/50 rounded-2xl px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span className="text-sm text-muted-foreground">Analyzing chart...</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <div ref={messagesEndRef} />
-              </div>
-
-              {/* Chat Input */}
-              <div className="p-4 border-t border-border bg-muted/20">
-                <div className="flex gap-2">
-                  <Input
-                    placeholder={`Ask about ${symbol} chart patterns, predictions...`}
-                    value={inputMessage}
-                    onChange={(e) => setInputMessage(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
-                    disabled={isLoading}
-                    className="flex-1 bg-background/50"
-                  />
-                  <Button 
-                    onClick={handleSendMessage} 
-                    disabled={isLoading || !inputMessage.trim()}
-                    size="sm"
-                    className="gap-2"
-                  >
-                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                  </Button>
+            )}
+            <div className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+              msg.role === 'user'
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-muted/50'
+            }`}>
+              {msg.imagePreview && (
+                <div className="mb-2 rounded-lg overflow-hidden border border-border/50">
+                  <img src={msg.imagePreview} alt="Chart" className="max-h-48 w-auto object-contain" />
                 </div>
-                <p className="text-xs text-muted-foreground mt-2">
-                  💡 Tip: Challenge the AI's predictions or share your own analysis to have a discussion!
-                </p>
+              )}
+              {msg.role === 'assistant' ? (
+                <div className="prose prose-sm prose-invert max-w-none">
+                  <ReactMarkdown>{msg.content}</ReactMarkdown>
+                </div>
+              ) : (
+                <p className="text-sm">{msg.content}</p>
+              )}
+              <p className="text-xs opacity-50 mt-1">
+                {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </p>
+            </div>
+            {msg.role === 'user' && (
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shrink-0">
+                <MessageCircle className="w-4 h-4 text-white" />
+              </div>
+            )}
+          </motion.div>
+        ))}
+
+        {/* Streaming */}
+        {streamingContent && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-accent to-primary flex items-center justify-center shrink-0">
+              <Bot className="w-4 h-4 text-white" />
+            </div>
+            <div className="max-w-[80%] rounded-2xl px-4 py-3 bg-muted/50">
+              <div className="prose prose-sm prose-invert max-w-none">
+                <ReactMarkdown>{streamingContent}</ReactMarkdown>
               </div>
             </div>
           </motion.div>
         )}
+
+        {isLoading && !streamingContent && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-accent to-primary flex items-center justify-center shrink-0">
+              <Bot className="w-4 h-4 text-white" />
+            </div>
+            <div className="rounded-2xl px-4 py-3 bg-muted/50">
+              <div className="flex items-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                <span className="text-sm text-muted-foreground">Analyzing chart...</span>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Quick Prompts */}
+      {messages.length <= 1 && (
+        <div className="px-4 pb-2 flex flex-wrap gap-2 shrink-0">
+          {quickPrompts.map((qp, idx) => (
+            <motion.button
+              key={idx}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => handleQuickPrompt(qp.prompt)}
+              disabled={isLoading}
+              className="px-3 py-1.5 text-xs bg-muted/50 hover:bg-muted rounded-full transition-colors disabled:opacity-50"
+            >
+              {qp.label}
+            </motion.button>
+          ))}
+        </div>
+      )}
+
+      {/* Image Preview */}
+      <AnimatePresence>
+        {uploadedImage && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="px-4 pb-2 shrink-0"
+          >
+            <div className="relative inline-block">
+              <img src={uploadedImage} alt="Chart preview" className="h-24 rounded-lg border border-border object-contain" />
+              <button
+                onClick={removeImage}
+                className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center text-xs hover:scale-110 transition-transform"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          </motion.div>
+        )}
       </AnimatePresence>
-    </motion.div>
+
+      {/* Drop Zone Overlay */}
+      <AnimatePresence>
+        {isDragging && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-primary/10 backdrop-blur-sm border-2 border-dashed border-primary rounded-2xl flex items-center justify-center z-10"
+          >
+            <div className="text-center">
+              <Upload className="w-12 h-12 text-primary mx-auto mb-2" />
+              <p className="font-medium text-primary">Drop chart screenshot here</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Input Area */}
+      <div
+        className="p-4 border-t border-border bg-background/50 shrink-0"
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+      >
+        <div className="flex items-center gap-2">
+          <input
+            type="file"
+            ref={fileInputRef}
+            className="hidden"
+            accept="image/*"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleFileSelect(file);
+              e.target.value = '';
+            }}
+          />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => fileInputRef.current?.click()}
+            className="shrink-0"
+            title="Upload chart screenshot"
+          >
+            <Upload className="w-5 h-5" />
+          </Button>
+          <div className="flex-1 relative">
+            <input
+              type="text"
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
+              onPaste={handlePaste}
+              placeholder={uploadedImage ? "Ask about this chart..." : "Upload a chart screenshot or ask a trading question..."}
+              className="w-full px-4 py-3 rounded-xl bg-muted/50 border border-border focus:border-primary focus:outline-none transition-colors text-sm"
+              disabled={isLoading}
+            />
+          </div>
+          <Button
+            variant="hero"
+            size="icon"
+            onClick={handleSendMessage}
+            disabled={isLoading || (!inputMessage.trim() && !imageBase64)}
+            className="shrink-0"
+          >
+            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+          </Button>
+        </div>
+        <p className="text-xs text-muted-foreground mt-2 text-center">
+          📸 Paste, drag & drop, or upload a TradingView chart screenshot • Ctrl+V to paste
+        </p>
+      </div>
+    </div>
   );
 };
 

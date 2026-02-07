@@ -12,7 +12,8 @@ import {
   PieChart,
   Menu,
   TrendingUp,
-  Sparkles
+  Sparkles,
+  BookOpen
 } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 import TradingViewChartAI from '@/components/dashboard/TradingViewChartAI';
@@ -69,6 +70,7 @@ const ChartAnalysis = () => {
             { icon: TrendingUp, label: 'Chart Analysis', active: true, href: '/chart-analysis' },
             { icon: Bot, label: 'AI Strategies', href: '/ai-strategies' },
             { icon: LineChart, label: 'Live Trading', href: '/live-trading' },
+            { icon: BookOpen, label: 'Trade Journal', href: '/trade-journal' },
             { icon: PieChart, label: 'Analytics', href: '/analytics' },
             { icon: Settings, label: 'Settings', href: '/settings' },
           ].map((item, index) => (
@@ -109,7 +111,7 @@ const ChartAnalysis = () => {
       {/* Main Content */}
       <main className={`transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-0'} p-8`}>
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
               <TrendingUp className="w-6 h-6 text-white" />
@@ -120,7 +122,7 @@ const ChartAnalysis = () => {
                 <Sparkles className="w-6 h-6 text-gold" />
               </h1>
               <p className="text-muted-foreground">
-                Analyze any chart with AI-powered predictions and pattern recognition
+                Upload TradingView chart screenshots for AI-powered analysis and predictions
               </p>
             </div>
           </div>
@@ -137,17 +139,17 @@ const ChartAnalysis = () => {
             <div>
               <p className="font-medium text-sm">How to use the AI Chart Analyzer</p>
               <ul className="text-xs text-muted-foreground mt-1 space-y-1">
-                <li>• Search for any stock, crypto, forex, or futures symbol</li>
-                <li>• Click quick prompts or type your own questions about the chart</li>
-                <li>• The AI analyzes patterns, indicators, and price action in real-time</li>
-                <li>• Challenge the AI's predictions or share your analysis for discussion</li>
+                <li>• Open TradingView, navigate to any chart, and take a screenshot</li>
+                <li>• Upload, paste (Ctrl+V), or drag & drop the screenshot here</li>
+                <li>• The AI will analyze patterns, indicators, and price action from the image</li>
                 <li>• Get specific entry points, stop-losses, and price targets</li>
+                <li>• Ask follow-up questions or challenge the AI's predictions</li>
               </ul>
             </div>
           </div>
         </motion.div>
 
-        {/* TradingView Chart with AI */}
+        {/* Chart AI Analyzer */}
         <TradingViewChartAI />
 
         {/* Disclaimer */}

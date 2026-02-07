@@ -130,6 +130,7 @@ const LiveTrading = () => {
         <nav className="flex-1 space-y-2">
           {[
             { icon: BarChart3, label: 'Dashboard', href: '/dashboard' },
+            { icon: TrendingUp, label: 'Chart Analysis', href: '/chart-analysis' },
             { icon: Bot, label: 'AI Strategies', href: '/ai-strategies' },
             { icon: LineChart, label: 'Live Trading', active: true, href: '/live-trading' },
             { icon: PieChart, label: 'Analytics', href: '/analytics' },
