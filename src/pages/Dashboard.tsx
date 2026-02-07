@@ -243,6 +243,7 @@ const Dashboard = () => {
             { icon: TrendingUp, label: 'Chart Analysis', href: '/chart-analysis' },
             { icon: Bot, label: 'AI Strategies', href: '/ai-strategies' },
             { icon: LineChart, label: 'Live Trading', href: '/live-trading' },
+            { icon: Clock, label: 'Trade Journal', href: '/trade-journal' },
             { icon: PieChart, label: 'Analytics', href: '/analytics' },
             { icon: Settings, label: 'Settings', href: '/settings' },
           ].map((item, index) => (

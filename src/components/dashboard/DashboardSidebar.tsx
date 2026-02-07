@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   LayoutDashboard, Bot, LineChart, BarChart3, Settings,
-  ChevronLeft, ChevronRight, LogOut, BookOpen
+  ChevronLeft, ChevronRight, LogOut, BookOpen, TrendingUp
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,6 +17,7 @@ interface DashboardSidebarProps {
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
+  { icon: TrendingUp, label: "Chart Analysis", path: "/chart-analysis" },
   { icon: Bot, label: "AI Strategies", path: "/ai-strategies" },
   { icon: LineChart, label: "Live Trading", path: "/live-trading" },
   { icon: BookOpen, label: "Trade Journal", path: "/trade-journal" },

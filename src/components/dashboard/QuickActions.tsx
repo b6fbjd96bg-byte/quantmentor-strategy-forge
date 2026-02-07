@@ -7,19 +7,21 @@ import {
   HelpCircle, 
   Download,
   CreditCard,
-  Link2
+  Link2,
+  BookOpen,
+  TrendingUp
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const actions = [
-  { icon: Link2, label: 'Connect Broker', href: '/coming-soon', color: 'primary' },
-  { icon: Wallet, label: 'Deposit Funds', href: '/coming-soon', color: 'accent' },
-  { icon: CreditCard, label: 'Withdraw', href: '/coming-soon', color: 'primary' },
-  { icon: Download, label: 'Export Data', href: '/coming-soon', color: 'accent' },
-  { icon: FileText, label: 'Trade History', href: '/coming-soon', color: 'primary' },
-  { icon: Bell, label: 'Notifications', href: '/coming-soon', color: 'accent' },
-  { icon: Settings, label: 'Settings', href: '/coming-soon', color: 'primary' },
-  { icon: HelpCircle, label: 'Get Help', href: '/coming-soon', color: 'accent' },
+  { icon: Link2, label: 'Connect Broker', href: '/settings', color: 'primary' },
+  { icon: TrendingUp, label: 'Chart Analysis', href: '/chart-analysis', color: 'accent' },
+  { icon: BookOpen, label: 'Trade Journal', href: '/trade-journal', color: 'primary' },
+  { icon: Download, label: 'Export Data', href: '/analytics', color: 'accent' },
+  { icon: FileText, label: 'AI Strategies', href: '/ai-strategies', color: 'primary' },
+  { icon: Bell, label: 'Notifications', href: '/settings', color: 'accent' },
+  { icon: Settings, label: 'Settings', href: '/settings', color: 'primary' },
+  { icon: HelpCircle, label: 'Get Help', href: '/help-center', color: 'accent' },
 ];
 
 const QuickActions = () => {
