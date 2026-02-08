@@ -5,35 +5,11 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { 
-  Zap, 
-  TrendingUp, 
-  TrendingDown,
-  DollarSign, 
-  BarChart3, 
-  Settings, 
-  LogOut,
-  Plus,
-  Activity,
-  Clock,
-  Target,
-  ChevronRight,
-  Bot,
-  LineChart,
-  PieChart,
-  RefreshCw,
-  Menu
+  Zap, TrendingUp, TrendingDown, DollarSign, BarChart3, Settings, LogOut,
+  Plus, Activity, Clock, Target, ChevronRight, Bot, LineChart, PieChart,
+  RefreshCw, Menu, BookOpen, Sparkles, ArrowUpRight, ArrowDownRight, Eye
 } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
-import BrokerConnection from '@/components/dashboard/BrokerConnection';
-import LiveTradingPanel from '@/components/dashboard/LiveTradingPanel';
-import PerformanceChart from '@/components/dashboard/PerformanceChart';
-import QuickActions from '@/components/dashboard/QuickActions';
-import MarketOverview from '@/components/dashboard/MarketOverview';
-import TradingViewChat from '@/components/dashboard/TradingViewChat';
-import AIStockAnalyzer from '@/components/dashboard/AIStockAnalyzer';
-import StrategyBotCard from '@/components/dashboard/StrategyBotCard';
-import BotTradesTable from '@/components/dashboard/BotTradesTable';
-import BacktestChart from '@/components/dashboard/BacktestChart';
 
 interface Strategy {
   id: string;
@@ -42,6 +18,7 @@ interface Strategy {
   markets: string[];
   status: string;
   created_at: string;
+  description: string | null;
 }
 
 interface Profile {
@@ -49,44 +26,10 @@ interface Profile {
   email: string | null;
 }
 
-interface StrategyBot {
-  id: string;
-  name: string;
-  status: string;
-  broker: string;
-  ai_analysis: string | null;
-  indicators: any[];
-  entry_logic: string | null;
-  exit_logic: string | null;
-  created_at: string;
-  backtest?: any;
-}
-
-interface BotTrade {
-  id: string;
-  symbol: string;
-  side: string;
-  trade_type: string;
-  entry_price: number;
-  exit_price: number | null;
-  quantity: number;
-  profit_loss: number;
-  profit_loss_percentage: number;
-  status: string;
-  entry_time: string;
-  exit_time: string | null;
-  broker: string;
-  entry_reason: string | null;
-  exit_reason: string | null;
-}
-
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [strategies, setStrategies] = useState<Strategy[]>([]);
-  const [bots, setBots] = useState<StrategyBot[]>([]);
-  const [trades, setTrades] = useState<BotTrade[]>([]);
-  const [selectedBacktest, setSelectedBacktest] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const navigate = useNavigate();
@@ -94,59 +37,24 @@ const Dashboard = () => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
-      if (!session?.user) {
-        navigate('/auth');
-      }
+      if (!session?.user) navigate('/auth');
     });
-
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session?.user) {
-        navigate('/auth');
-      } else {
-        setUser(session.user);
-        fetchData(session.user.id);
-      }
+      if (!session?.user) { navigate('/auth'); }
+      else { setUser(session.user); fetchData(session.user.id); }
     });
-
     return () => subscription.unsubscribe();
   }, [navigate]);
 
   const fetchData = async (userId: string) => {
     setIsLoading(true);
     try {
-      const [profileRes, strategiesRes, botsRes, tradesRes] = await Promise.all([
+      const [profileRes, strategiesRes] = await Promise.all([
         supabase.from('profiles').select('full_name, email').eq('user_id', userId).maybeSingle(),
         supabase.from('strategies').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
-        supabase.from('strategy_bots').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
-        supabase.from('bot_trades').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(20),
       ]);
-
       if (profileRes.data) setProfile(profileRes.data);
       if (strategiesRes.data) setStrategies(strategiesRes.data);
-      if (tradesRes.data) setTrades(tradesRes.data as BotTrade[]);
-
-      // Fetch backtests for each bot
-      if (botsRes.data) {
-        const botsWithBacktests = await Promise.all(
-          botsRes.data.map(async (bot: any) => {
-            const { data: backtest } = await supabase
-              .from('backtest_results')
-              .select('*')
-              .eq('bot_id', bot.id)
-              .order('created_at', { ascending: false })
-              .limit(1)
-              .maybeSingle();
-            return { ...bot, backtest };
-          })
-        );
-        setBots(botsWithBacktests as StrategyBot[]);
-        
-        // Set the first bot's backtest as selected if available
-        const firstBacktest = botsWithBacktests.find(b => b.backtest)?.backtest;
-        if (firstBacktest) {
-          setSelectedBacktest(firstBacktest);
-        }
-      }
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -160,56 +68,42 @@ const Dashboard = () => {
     navigate('/');
   };
 
-  const handleActivateBot = async (botId: string) => {
-    const { error } = await supabase
-      .from('strategy_bots')
-      .update({ status: 'running' })
-      .eq('id', botId);
-    
-    if (error) {
-      toast.error('Failed to activate bot');
-    } else {
-      toast.success('Bot activated! Paper trading started.');
-      setBots(prev => prev.map(b => b.id === botId ? { ...b, status: 'running' } : b));
-    }
-  };
+  const navItems = [
+    { icon: BarChart3, label: 'Dashboard', active: true, href: '/dashboard' },
+    { icon: TrendingUp, label: 'Chart Analysis', href: '/chart-analysis' },
+    { icon: Bot, label: 'AI Strategies', href: '/ai-strategies' },
+    { icon: LineChart, label: 'Live Trading', href: '/live-trading' },
+    { icon: BookOpen, label: 'Trade Journal', href: '/trade-journal' },
+    { icon: PieChart, label: 'Analytics', href: '/analytics' },
+    { icon: Settings, label: 'Settings', href: '/settings' },
+  ];
 
-  const handlePauseBot = async (botId: string) => {
-    const { error } = await supabase
-      .from('strategy_bots')
-      .update({ status: 'paused' })
-      .eq('id', botId);
-    
-    if (error) {
-      toast.error('Failed to pause bot');
-    } else {
-      toast.success('Bot paused');
-      setBots(prev => prev.map(b => b.id === botId ? { ...b, status: 'paused' } : b));
-    }
-  };
-
-  // Calculate stats from real data
-  const totalProfit = trades.reduce((sum, t) => sum + (t.profit_loss || 0), 0);
-  const winningTrades = trades.filter(t => t.profit_loss > 0).length;
-  const winRate = trades.length > 0 ? (winningTrades / trades.length) * 100 : 0;
-  const activeBots = bots.filter(b => b.status === 'running').length;
-
-  const stats = {
-    totalProfit,
-    winRate,
-    totalTrades: trades.length,
-    activeBots,
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return 'bg-accent/20 text-accent';
-      case 'pending': return 'bg-yellow-500/20 text-yellow-400';
-      case 'paused': return 'bg-muted text-muted-foreground';
-      case 'processing': return 'bg-primary/20 text-primary';
-      default: return 'bg-primary/20 text-primary';
-    }
-  };
+  const quickModules = [
+    {
+      icon: TrendingUp, title: 'AI Chart Analysis', desc: 'Upload TradingView screenshots for AI-powered pattern recognition & trade setups',
+      href: '/chart-analysis', color: 'from-primary/20 to-cyan-500/20', iconColor: 'text-primary'
+    },
+    {
+      icon: Bot, title: 'AI Strategies', desc: 'Browse pre-built AI trading strategies with backtested performance data',
+      href: '/ai-strategies', color: 'from-accent/20 to-green-500/20', iconColor: 'text-accent'
+    },
+    {
+      icon: LineChart, title: 'Live Trading', desc: 'Monitor real-time positions, execute trades via connected broker APIs',
+      href: '/live-trading', color: 'from-yellow-500/20 to-orange-500/20', iconColor: 'text-yellow-400'
+    },
+    {
+      icon: BookOpen, title: 'Trade Journal', desc: 'Log & review trades with emotions, strategy tags, and lessons learned',
+      href: '/trade-journal', color: 'from-purple-500/20 to-pink-500/20', iconColor: 'text-purple-400'
+    },
+    {
+      icon: PieChart, title: 'Analytics', desc: 'Deep dive into your trading performance with charts and win-rate analysis',
+      href: '/analytics', color: 'from-blue-500/20 to-indigo-500/20', iconColor: 'text-blue-400'
+    },
+    {
+      icon: DollarSign, title: 'Capital Allocation', desc: 'Allocate capital across qualified strategies with automated risk controls',
+      href: '/capital-allocation', color: 'from-emerald-500/20 to-teal-500/20', iconColor: 'text-emerald-400'
+    },
+  ];
 
   if (isLoading) {
     return (
@@ -236,243 +130,129 @@ const Dashboard = () => {
           </div>
           <span className="font-display text-xl font-bold">QuantMentor</span>
         </Link>
-
         <nav className="flex-1 space-y-2">
-          {[
-            { icon: BarChart3, label: 'Dashboard', active: true, href: '/dashboard' },
-            { icon: TrendingUp, label: 'Chart Analysis', href: '/chart-analysis' },
-            { icon: Bot, label: 'AI Strategies', href: '/ai-strategies' },
-            { icon: LineChart, label: 'Live Trading', href: '/live-trading' },
-            { icon: Clock, label: 'Trade Journal', href: '/trade-journal' },
-            { icon: PieChart, label: 'Analytics', href: '/analytics' },
-            { icon: Settings, label: 'Settings', href: '/settings' },
-          ].map((item, index) => (
-            <Link
-              key={index}
-              to={item.href}
+          {navItems.map((item, i) => (
+            <Link key={i} to={item.href}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                item.active
-                  ? 'bg-primary/10 text-primary'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-              }`}
-            >
+                item.active ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+              }`}>
               <item.icon className="w-5 h-5" />
               <span className="font-medium">{item.label}</span>
             </Link>
           ))}
         </nav>
-
         <div className="pt-4 border-t border-border">
-          <button
-            onClick={handleSignOut}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-          >
+          <button onClick={handleSignOut}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors">
             <LogOut className="w-5 h-5" />
             <span className="font-medium">Sign Out</span>
           </button>
         </div>
       </motion.aside>
 
-      {/* Mobile Menu Toggle */}
-      <button
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="fixed top-4 left-4 z-50 lg:hidden p-2 rounded-lg bg-card border border-border"
-      >
+      <button onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="fixed top-4 left-4 z-50 lg:hidden p-2 rounded-lg bg-card border border-border">
         <Menu className="w-5 h-5" />
       </button>
 
       {/* Main Content */}
       <main className={`transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-0'} p-8`}>
-        {/* Header */}
+        {/* Welcome Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="font-display text-3xl font-bold mb-1">
-              Welcome back, {profile?.full_name || 'Trader'}
+              Welcome back, {profile?.full_name || 'Trader'} 👋
             </h1>
             <p className="text-muted-foreground">
-              Manage your AI trading bots and monitor performance.
+              Your command center for AI-powered trading. Navigate to any module below.
             </p>
           </div>
           <Link to="/submit-strategy">
             <Button variant="hero" className="gap-2">
               <Plus className="w-5 h-5" />
-              Create Bot
+              Create Strategy
             </Button>
           </Link>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {/* Quick Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           {[
-            {
-              label: 'Total P&L',
-              value: `${stats.totalProfit >= 0 ? '+' : ''}$${stats.totalProfit.toFixed(2)}`,
-              change: trades.length > 0 ? `${trades.length} trades` : 'No trades yet',
-              changePositive: stats.totalProfit >= 0,
-              icon: DollarSign,
-              color: 'primary',
-            },
-            {
-              label: 'Win Rate',
-              value: `${stats.winRate.toFixed(1)}%`,
-              change: `${winningTrades}/${trades.length} winning`,
-              changePositive: stats.winRate >= 50,
-              icon: Target,
-              color: 'accent',
-            },
-            {
-              label: 'Total Trades',
-              value: stats.totalTrades.toString(),
-              change: 'Across all bots',
-              changePositive: true,
-              icon: Activity,
-              color: 'primary',
-            },
-            {
-              label: 'Active Bots',
-              value: stats.activeBots.toString(),
-              change: `${bots.length} total bots`,
-              changePositive: stats.activeBots > 0,
-              icon: Bot,
-              color: 'accent',
-            },
-          ].map((stat, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="bg-card rounded-2xl border border-border p-6"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className={`w-12 h-12 rounded-xl ${stat.color === 'primary' ? 'bg-primary/10' : 'bg-accent/10'} flex items-center justify-center`}>
-                  <stat.icon className={`w-6 h-6 ${stat.color === 'primary' ? 'text-primary' : 'text-accent'}`} />
+            { label: 'Strategies', value: strategies.length.toString(), sub: 'Created', icon: Bot, color: 'primary' },
+            { label: 'Active', value: strategies.filter(s => s.status === 'active').length.toString(), sub: 'Running', icon: Activity, color: 'accent' },
+            { label: 'Markets', value: [...new Set(strategies.flatMap(s => s.markets))].length.toString(), sub: 'Tracked', icon: Target, color: 'primary' },
+            { label: 'AI Modules', value: '6', sub: 'Available', icon: Sparkles, color: 'accent' },
+          ].map((stat, i) => (
+            <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+              className="bg-card rounded-2xl border border-border p-5">
+              <div className="flex items-center justify-between mb-3">
+                <div className={`w-10 h-10 rounded-xl ${stat.color === 'primary' ? 'bg-primary/10' : 'bg-accent/10'} flex items-center justify-center`}>
+                  <stat.icon className={`w-5 h-5 ${stat.color === 'primary' ? 'text-primary' : 'text-accent'}`} />
                 </div>
-                <span className={`text-sm font-medium ${stat.changePositive ? 'text-accent' : 'text-destructive'}`}>
-                  {stat.change}
-                </span>
+                <span className="text-xs text-muted-foreground">{stat.sub}</span>
               </div>
-              <p className="text-sm text-muted-foreground mb-1">{stat.label}</p>
+              <p className="text-sm text-muted-foreground">{stat.label}</p>
               <p className="font-display text-2xl font-bold">{stat.value}</p>
             </motion.div>
           ))}
         </div>
 
-        {/* Trading Bots Section */}
-        {bots.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="mb-8"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-display text-xl font-bold flex items-center gap-2">
-                <Bot className="w-5 h-5 text-primary" />
-                Your Trading Bots
-              </h2>
-              <Link to="/submit-strategy" className="text-sm text-primary hover:text-primary/80 font-medium flex items-center gap-1">
-                + Create New <ChevronRight className="w-4 h-4" />
-              </Link>
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {bots.map((bot) => (
-                <StrategyBotCard
-                  key={bot.id}
-                  bot={bot as any}
-                  onActivate={handleActivateBot}
-                  onPause={handlePauseBot}
-                />
-              ))}
-            </div>
-          </motion.div>
-        )}
-
-        {/* Backtest Results */}
-        {selectedBacktest && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="mb-8"
-          >
-            <BacktestChart result={selectedBacktest} />
-          </motion.div>
-        )}
-
-        {/* Bot Trades */}
-        {trades.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="mb-8"
-          >
-            <BotTradesTable trades={trades} />
-          </motion.div>
-        )}
-
-        {/* Main Grid - Row 1 */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <BrokerConnection />
-          <LiveTradingPanel />
-        </div>
-
-        {/* Main Grid - Row 2 */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          <div className="lg:col-span-2">
-            <PerformanceChart />
+        {/* Module Cards */}
+        <div className="mb-8">
+          <h2 className="font-display text-xl font-bold mb-4 flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-primary" />
+            Trading Modules
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {quickModules.map((mod, i) => (
+              <motion.div key={i}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 + i * 0.05 }}
+                whileHover={{ y: -4, scale: 1.01 }}
+              >
+                <Link to={mod.href} className="block bg-card rounded-2xl border border-border p-6 hover:border-primary/30 transition-all group">
+                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${mod.color} flex items-center justify-center mb-4`}>
+                    <mod.icon className={`w-6 h-6 ${mod.iconColor}`} />
+                  </div>
+                  <h3 className="font-bold text-lg mb-2 group-hover:text-primary transition-colors">{mod.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{mod.desc}</p>
+                  <div className="mt-4 flex items-center gap-1 text-sm text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                    Open <ArrowUpRight className="w-4 h-4" />
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
           </div>
-          <MarketOverview />
         </div>
 
-        {/* Main Grid - Row 2.5: AI Analyzer & Chat */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <AIStockAnalyzer />
-          <TradingViewChat />
-        </div>
-
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <QuickActions />
-        </div>
-
-        {/* Strategies List */}
-        <motion.div
-          initial={{ opacity: 0, y: 20, scale: 0.98 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ delay: 0.5, type: "spring", stiffness: 100 }}
-          className="bg-card rounded-2xl border border-border p-6 mb-6"
-        >
+        {/* Your Strategies */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
+          className="bg-card rounded-2xl border border-border p-6 mb-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="font-display text-xl font-bold">Your Strategies</h2>
             <Link to="/submit-strategy" className="text-sm text-primary hover:text-primary/80 font-medium flex items-center gap-1">
-              + Add New <ChevronRight className="w-4 h-4" />
+              + Create New <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
-
           {strategies.length === 0 ? (
-            <div className="text-center py-8">
-              <motion.div 
-                className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-4"
-                animate={{ rotate: [0, 10, -10, 0] }}
-                transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-              >
+            <div className="text-center py-12">
+              <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-4">
                 <Bot className="w-8 h-8 text-muted-foreground" />
-              </motion.div>
-              <p className="text-muted-foreground mb-4">No strategies yet</p>
+              </div>
+              <p className="text-muted-foreground mb-2">No strategies yet</p>
+              <p className="text-sm text-muted-foreground mb-4">Create your first AI-powered trading bot to get started</p>
               <Link to="/submit-strategy">
                 <Button variant="outline" size="sm" className="gap-2">
                   <Plus className="w-4 h-4" />
-                  Create Your First Trading Bot
+                  Create Trading Bot
                 </Button>
               </Link>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {strategies.slice(0, 6).map((strategy, index) => (
-                <motion.div
-                  key={strategy.id}
+                <motion.div key={strategy.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
@@ -481,9 +261,9 @@ const Dashboard = () => {
                 >
                   <div className="flex items-center justify-between mb-2">
                     <p className="font-medium">{strategy.name}</p>
-                    <span className={`text-xs px-2 py-1 rounded-full capitalize ${getStatusColor(strategy.status)}`}>
-                      {strategy.status}
-                    </span>
+                    <span className={`text-xs px-2 py-1 rounded-full capitalize ${
+                      strategy.status === 'active' ? 'bg-accent/20 text-accent' : 'bg-muted text-muted-foreground'
+                    }`}>{strategy.status}</span>
                   </div>
                   <p className="text-sm text-muted-foreground">
                     {strategy.strategy_type} • {strategy.markets.join(', ')}
@@ -495,26 +275,18 @@ const Dashboard = () => {
         </motion.div>
 
         {/* CTA Banner */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
-          className="bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 rounded-2xl border border-primary/20 p-8"
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
+          className="bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 rounded-2xl border border-primary/20 p-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div>
-              <h3 className="font-display text-2xl font-bold mb-2">
-                Ready to automate more trades?
-              </h3>
-              <p className="text-muted-foreground">
-                Create a new AI-powered trading bot or use our pre-built strategies.
-              </p>
+              <h3 className="font-display text-2xl font-bold mb-2">Ready to analyze your next trade?</h3>
+              <p className="text-muted-foreground">Upload a chart screenshot and get AI-powered analysis in seconds.</p>
             </div>
             <div className="flex gap-4">
-              <Link to="/submit-strategy">
+              <Link to="/chart-analysis">
                 <Button variant="hero" className="gap-2">
-                  <Plus className="w-5 h-5" />
-                  Create Bot
+                  <TrendingUp className="w-5 h-5" />
+                  Chart Analysis
                 </Button>
               </Link>
               <Link to="/ai-strategies">
