@@ -15,6 +15,8 @@ import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
 import TradeJournal from "./pages/TradeJournal";
 import ChartAnalysis from "./pages/ChartAnalysis";
+import Blog from "./pages/Blog";
+import BlogPostPage from "./pages/BlogPost";
 import CapitalAllocation from "./pages/CapitalAllocation";
 import CapitalAllocationStart from "./pages/CapitalAllocationStart";
 import CapitalAllocationDashboard from "./pages/CapitalAllocationDashboard";
@@ -55,7 +57,8 @@ const App = () => (
           <Route path="/press" element={<ComingSoon />} />
           <Route path="/contact" element={<ComingSoon />} />
           {/* Resources Pages */}
-          <Route path="/blog" element={<ComingSoon />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:slug" element={<BlogPostPage />} />
           <Route path="/case-studies" element={<ComingSoon />} />
           <Route path="/help-center" element={<ComingSoon />} />
           <Route path="/strategy-guide" element={<ComingSoon />} />
