@@ -23,6 +23,7 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import StrategyChartPreview from '@/components/dashboard/StrategyChartPreview';
 
 const steps = [
   { id: 1, title: 'Strategy Overview', icon: Target },
@@ -220,26 +221,34 @@ const SubmitStrategy = () => {
           </p>
 
           {botResult && (
-            <div className="bg-card rounded-xl border border-border p-4 mb-6 text-left">
-              <h3 className="font-semibold text-foreground mb-3">Backtest Summary</h3>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="text-muted-foreground">Win Rate:</span>
-                  <p className="font-bold text-accent">{botResult.backtestSummary?.winRate?.toFixed(1)}%</p>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">P&L:</span>
-                  <p className={`font-bold ${botResult.backtestSummary?.profitLoss >= 0 ? 'text-accent' : 'text-destructive'}`}>
-                    ${botResult.backtestSummary?.profitLoss?.toFixed(0)}
-                  </p>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Total Trades:</span>
-                  <p className="font-bold text-foreground">{botResult.backtestSummary?.totalTrades}</p>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Max Drawdown:</span>
-                  <p className="font-bold text-destructive">-{botResult.backtestSummary?.maxDrawdown?.toFixed(1)}%</p>
+            <div className="space-y-4 mb-6">
+              <StrategyChartPreview
+                strategyType={formData.timeframe?.includes('Scalp') ? 'scalping' : formData.timeframe?.includes('Swing') ? 'swing' : 'momentum'}
+                indicators={formData.indicators?.split(',').map(s => s.trim()).filter(Boolean) || ['RSI', 'EMA']}
+                strategyName={formData.strategyName || 'Custom Strategy'}
+                timeframe={formData.timeframe || '4H'}
+              />
+              <div className="bg-card rounded-xl border border-border p-4 text-left">
+                <h3 className="font-semibold text-foreground mb-3">Backtest Summary</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">Win Rate:</span>
+                    <p className="font-bold text-accent">{botResult.backtestSummary?.winRate?.toFixed(1)}%</p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">P&L:</span>
+                    <p className={`font-bold ${botResult.backtestSummary?.profitLoss >= 0 ? 'text-accent' : 'text-destructive'}`}>
+                      ${botResult.backtestSummary?.profitLoss?.toFixed(0)}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Total Trades:</span>
+                    <p className="font-bold text-foreground">{botResult.backtestSummary?.totalTrades}</p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Max Drawdown:</span>
+                    <p className="font-bold text-destructive">-{botResult.backtestSummary?.maxDrawdown?.toFixed(1)}%</p>
+                  </div>
                 </div>
               </div>
             </div>
