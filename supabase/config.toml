@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.predict-chart]
 verify_jwt = false
+
+[functions.generate-blog]
+verify_jwt = false
