@@ -8,6 +8,7 @@ import {
   ArrowUpRight, Sparkles, Cpu, Brain, BookOpen, Info, Layers,
   Crosshair, Gauge, Repeat, Zap as ZapIcon
 } from 'lucide-react';
+import StrategyChartPreview from '@/components/dashboard/StrategyChartPreview';
 
 interface AIStrategy {
   id: string;
@@ -354,6 +355,15 @@ const AIStrategies = () => {
               {expandedId === strategy.id && (
                 <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
                   className="border-t border-border bg-muted/20 p-6 space-y-4">
+                  
+                  {/* Strategy Chart Preview */}
+                  <StrategyChartPreview
+                    strategyType={strategy.type}
+                    indicators={strategy.indicators}
+                    strategyName={strategy.name}
+                    timeframe={strategy.timeframe}
+                  />
+
                   <div>
                     <h4 className="text-sm font-bold mb-1 flex items-center gap-2">
                       <Brain className="w-4 h-4 text-primary" /> How It Works
