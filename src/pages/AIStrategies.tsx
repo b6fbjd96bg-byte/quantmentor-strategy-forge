@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import TradingViewChartModal from '@/components/dashboard/TradingViewChartModal';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -151,6 +152,7 @@ const AIStrategies = () => {
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const [strategies, setStrategies] = useState(aiStrategies);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [chartPreviewStrategy, setChartPreviewStrategy] = useState<AIStrategy | null>(null);
 
   const filters = ['all', 'momentum', 'mean-reversion', 'breakout', 'scalping', 'swing'];
 
@@ -344,6 +346,11 @@ const AIStrategies = () => {
                     <Info className="w-4 h-4" />
                     {expandedId === strategy.id ? 'Hide Details' : 'View Details'}
                   </Button>
+                  <Button variant="outline" size="sm" className="flex-1 gap-2"
+                    onClick={() => setChartPreviewStrategy(strategy)}>
+                    <LineChart className="w-4 h-4" />
+                    Chart Preview
+                  </Button>
                   <Button variant="hero" size="sm" className="flex-1 gap-2">
                     <Play className="w-4 h-4" />
                     {strategy.isActive ? 'Running' : 'Activate'}
@@ -395,6 +402,18 @@ const AIStrategies = () => {
             </motion.div>
           ))}
         </div>
+
+        {/* TradingView Chart Preview Modal */}
+        {chartPreviewStrategy && (
+          <TradingViewChartModal
+            open={!!chartPreviewStrategy}
+            onOpenChange={(open) => !open && setChartPreviewStrategy(null)}
+            strategyName={chartPreviewStrategy.name}
+            strategyType={chartPreviewStrategy.type}
+            indicators={chartPreviewStrategy.indicators}
+            timeframe={chartPreviewStrategy.timeframe}
+          />
+        )}
       </main>
     </div>
   );
