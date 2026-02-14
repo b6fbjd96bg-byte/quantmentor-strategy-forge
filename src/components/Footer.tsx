@@ -48,17 +48,17 @@ const Footer = () => {
               Professional automation for modern traders.
             </p>
             <div className="space-y-3">
-              <a href="mailto:contact@quantmentor.com" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
+              <a href="mailto:contact@quantmentor.org" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
                 <Mail className="w-4 h-4" />
-                contact@quantmentor.com
+                contact@quantmentor.org
               </a>
-              <a href="tel:+1-888-QUANT" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
+              <a href="tel:+918851484102" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors">
                 <Phone className="w-4 h-4" />
-                1-888-QUANT-01
+                8851484102
               </a>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <MapPin className="w-4 h-4" />
-                New York, NY
+                suncity sector 54 gurugram haryana
               </div>
             </div>
           </div>
