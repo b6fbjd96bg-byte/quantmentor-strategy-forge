@@ -10,6 +10,7 @@ import {
   RefreshCw, Menu, BookOpen, Sparkles, ArrowUpRight, ArrowDownRight, Eye
 } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
+import OnboardingTour from '@/components/onboarding/OnboardingTour';
 
 interface Strategy {
   id: string;
@@ -35,6 +36,7 @@ const Dashboard = () => {
   const [activeBots, setActiveBots] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
