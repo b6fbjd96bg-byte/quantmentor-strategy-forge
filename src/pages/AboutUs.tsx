@@ -5,7 +5,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
 const team = [
-  { name: 'Jatin Sharma', role: 'Founder & CEO', desc: 'Quant trader turned entrepreneur with 8+ years in algorithmic trading.' },
+  { name: 'Jatin Kumar', role: 'Founder & CEO', desc: 'Cybersecurity expert, OSCP+ certified, and expert trader with deep expertise in secure trading infrastructure.' },
   { name: 'Priya Mehta', role: 'Head of AI', desc: 'Former ML lead at a top hedge fund. PhD in Computational Finance.' },
   { name: 'Arjun Patel', role: 'CTO', desc: 'Full-stack architect with expertise in low-latency trading systems.' },
   { name: 'Neha Gupta', role: 'Head of Risk', desc: 'Risk management specialist with experience at leading brokerages.' },
