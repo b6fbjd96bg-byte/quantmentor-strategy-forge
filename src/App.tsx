@@ -7,7 +7,6 @@ import Index from "./pages/Index";
 import SubmitStrategy from "./pages/SubmitStrategy";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
-import ComingSoon from "./pages/ComingSoon";
 import NotFound from "./pages/NotFound";
 import AIStrategies from "./pages/AIStrategies";
 import LiveTrading from "./pages/LiveTrading";
@@ -22,6 +21,18 @@ import CapitalAllocationStart from "./pages/CapitalAllocationStart";
 import CapitalAllocationDashboard from "./pages/CapitalAllocationDashboard";
 import CapitalAllocationAnalytics from "./pages/CapitalAllocationAnalytics";
 import CapitalAllocationMethodology from "./pages/CapitalAllocationMethodology";
+import AboutUs from "./pages/AboutUs";
+import Careers from "./pages/Careers";
+import Press from "./pages/Press";
+import Contact from "./pages/Contact";
+import ApiDocumentation from "./pages/ApiDocumentation";
+import CaseStudies from "./pages/CaseStudies";
+import HelpCenter from "./pages/HelpCenter";
+import StrategyGuide from "./pages/StrategyGuide";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
+import RiskDisclosure from "./pages/RiskDisclosure";
+import Compliance from "./pages/Compliance";
 
 const queryClient = new QueryClient();
 
