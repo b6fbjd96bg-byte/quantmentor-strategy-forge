@@ -25,6 +25,7 @@ interface Strategy {
 interface Profile {
   full_name: string | null;
   email: string | null;
+  trading_experience: string | null;
 }
 
 const Dashboard = () => {
@@ -55,7 +56,7 @@ const Dashboard = () => {
     setIsLoading(true);
     try {
       const [profileRes, strategiesRes, tradesRes, botsRes, journalRes] = await Promise.all([
-        supabase.from('profiles').select('full_name, email').eq('user_id', userId).maybeSingle(),
+        supabase.from('profiles').select('full_name, email, trading_experience').eq('user_id', userId).maybeSingle(),
         supabase.from('strategies').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
         supabase.from('bot_trades').select('profit_loss').eq('user_id', userId),
         supabase.from('strategy_bots').select('id, status').eq('user_id', userId).eq('status', 'running'),
