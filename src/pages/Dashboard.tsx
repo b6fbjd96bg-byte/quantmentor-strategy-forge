@@ -10,6 +10,7 @@ import {
   RefreshCw, Menu, BookOpen, Sparkles, ArrowUpRight, ArrowDownRight, Eye
 } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
+import OnboardingTour from '@/components/onboarding/OnboardingTour';
 
 interface Strategy {
   id: string;
@@ -24,6 +25,7 @@ interface Strategy {
 interface Profile {
   full_name: string | null;
   email: string | null;
+  trading_experience: string | null;
 }
 
 const Dashboard = () => {
@@ -35,6 +37,7 @@ const Dashboard = () => {
   const [activeBots, setActiveBots] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -53,13 +56,22 @@ const Dashboard = () => {
     setIsLoading(true);
     try {
       const [profileRes, strategiesRes, tradesRes, botsRes, journalRes] = await Promise.all([
-        supabase.from('profiles').select('full_name, email').eq('user_id', userId).maybeSingle(),
+        supabase.from('profiles').select('full_name, email, trading_experience').eq('user_id', userId).maybeSingle(),
         supabase.from('strategies').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
         supabase.from('bot_trades').select('profit_loss').eq('user_id', userId),
         supabase.from('strategy_bots').select('id, status').eq('user_id', userId).eq('status', 'running'),
         supabase.from('trade_journal').select('profit_loss').eq('user_id', userId).eq('status', 'closed'),
       ]);
-      if (profileRes.data) setProfile(profileRes.data);
+      if (profileRes.data) {
+        setProfile(profileRes.data);
+        // Show onboarding for new users (no trading_experience set or not 'onboarded')
+        if (!profileRes.data.trading_experience || profileRes.data.trading_experience !== 'onboarded') {
+          setShowOnboarding(true);
+        }
+      } else {
+        // No profile yet — new user, show onboarding
+        setShowOnboarding(true);
+      }
       if (strategiesRes.data) setStrategies(strategiesRes.data);
       
       // Calculate total trades and P&L from both bot_trades and trade_journal
@@ -316,6 +328,11 @@ const Dashboard = () => {
           </div>
         </motion.div>
       </main>
+
+      {/* Onboarding Tour */}
+      {showOnboarding && (
+        <OnboardingTour onComplete={() => setShowOnboarding(false)} />
+      )}
     </div>
   );
 };
