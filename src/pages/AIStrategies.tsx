@@ -350,8 +350,8 @@ const AIStrategies = () => {
       {/* Chart Preview Modal */}
       {chartPreviewStrategy && (
         <TradingViewChartModal
-          isOpen={!!chartPreviewStrategy}
-          onClose={() => setChartPreviewStrategy(null)}
+          open={!!chartPreviewStrategy}
+          onOpenChange={(open) => { if (!open) setChartPreviewStrategy(null); }}
           strategyName={chartPreviewStrategy.name}
           strategyType={chartPreviewStrategy.type}
           indicators={chartPreviewStrategy.indicators}
