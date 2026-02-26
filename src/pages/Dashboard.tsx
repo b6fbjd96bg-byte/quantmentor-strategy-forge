@@ -30,6 +30,9 @@ const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [strategies, setStrategies] = useState<Strategy[]>([]);
+  const [totalTrades, setTotalTrades] = useState(0);
+  const [totalPnl, setTotalPnl] = useState(0);
+  const [activeBots, setActiveBots] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const navigate = useNavigate();
@@ -49,12 +52,26 @@ const Dashboard = () => {
   const fetchData = async (userId: string) => {
     setIsLoading(true);
     try {
-      const [profileRes, strategiesRes] = await Promise.all([
+      const [profileRes, strategiesRes, tradesRes, botsRes, journalRes] = await Promise.all([
         supabase.from('profiles').select('full_name, email').eq('user_id', userId).maybeSingle(),
         supabase.from('strategies').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
+        supabase.from('bot_trades').select('profit_loss').eq('user_id', userId),
+        supabase.from('strategy_bots').select('id, status').eq('user_id', userId).eq('status', 'running'),
+        supabase.from('trade_journal').select('profit_loss').eq('user_id', userId).eq('status', 'closed'),
       ]);
       if (profileRes.data) setProfile(profileRes.data);
       if (strategiesRes.data) setStrategies(strategiesRes.data);
+      
+      // Calculate total trades and P&L from both bot_trades and trade_journal
+      const botTradeCount = tradesRes.data?.length || 0;
+      const journalTradeCount = journalRes.data?.length || 0;
+      setTotalTrades(botTradeCount + journalTradeCount);
+      
+      const botPnl = tradesRes.data?.reduce((sum, t) => sum + (Number(t.profit_loss) || 0), 0) || 0;
+      const journalPnl = journalRes.data?.reduce((sum, t) => sum + (Number(t.profit_loss) || 0), 0) || 0;
+      setTotalPnl(botPnl + journalPnl);
+      
+      setActiveBots(botsRes.data?.length || 0);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -175,13 +192,13 @@ const Dashboard = () => {
           </Link>
         </div>
 
-        {/* Quick Stats */}
+        {/* Quick Stats - Real Data */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           {[
             { label: 'Strategies', value: strategies.length.toString(), sub: 'Created', icon: Bot, color: 'primary' },
-            { label: 'Active', value: strategies.filter(s => s.status === 'active').length.toString(), sub: 'Running', icon: Activity, color: 'accent' },
-            { label: 'Markets', value: [...new Set(strategies.flatMap(s => s.markets))].length.toString(), sub: 'Tracked', icon: Target, color: 'primary' },
-            { label: 'AI Modules', value: '6', sub: 'Available', icon: Sparkles, color: 'accent' },
+            { label: 'Active Bots', value: activeBots.toString(), sub: 'Running', icon: Activity, color: 'accent' },
+            { label: 'Total Trades', value: totalTrades.toString(), sub: 'Executed', icon: Target, color: 'primary' },
+            { label: 'Total P&L', value: `${totalPnl >= 0 ? '+' : ''}$${totalPnl.toFixed(2)}`, sub: totalPnl >= 0 ? 'Profit' : 'Loss', icon: DollarSign, color: totalPnl >= 0 ? 'accent' : 'primary' },
           ].map((stat, i) => (
             <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
               className="bg-card rounded-2xl border border-border p-5">
