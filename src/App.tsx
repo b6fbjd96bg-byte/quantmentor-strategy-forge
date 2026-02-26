@@ -61,24 +61,23 @@ const App = () => (
           <Route path="/capital-allocation/analytics" element={<CapitalAllocationAnalytics />} />
           <Route path="/capital-allocation/methodology" element={<CapitalAllocationMethodology />} />
           {/* Product Pages */}
-          <Route path="/api-documentation" element={<ComingSoon />} />
+          <Route path="/api-documentation" element={<ApiDocumentation />} />
           {/* Company Pages */}
-          <Route path="/about-us" element={<ComingSoon />} />
-          <Route path="/careers" element={<ComingSoon />} />
-          <Route path="/press" element={<ComingSoon />} />
-          <Route path="/contact" element={<ComingSoon />} />
+          <Route path="/about-us" element={<AboutUs />} />
+          <Route path="/careers" element={<Careers />} />
+          <Route path="/press" element={<Press />} />
+          <Route path="/contact" element={<Contact />} />
           {/* Resources Pages */}
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/:slug" element={<BlogPostPage />} />
-          <Route path="/case-studies" element={<ComingSoon />} />
-          <Route path="/help-center" element={<ComingSoon />} />
-          <Route path="/strategy-guide" element={<ComingSoon />} />
+          <Route path="/case-studies" element={<CaseStudies />} />
+          <Route path="/help-center" element={<HelpCenter />} />
+          <Route path="/strategy-guide" element={<StrategyGuide />} />
           {/* Legal Pages */}
-          <Route path="/privacy-policy" element={<ComingSoon />} />
-          <Route path="/terms-of-service" element={<ComingSoon />} />
-          <Route path="/risk-disclosure" element={<ComingSoon />} />
-          <Route path="/compliance" element={<ComingSoon />} />
-          <Route path="/coming-soon" element={<ComingSoon />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
+          <Route path="/risk-disclosure" element={<RiskDisclosure />} />
+          <Route path="/compliance" element={<Compliance />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
