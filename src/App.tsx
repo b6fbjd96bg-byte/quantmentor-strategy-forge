@@ -7,7 +7,6 @@ import Index from "./pages/Index";
 import SubmitStrategy from "./pages/SubmitStrategy";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
-import ComingSoon from "./pages/ComingSoon";
 import NotFound from "./pages/NotFound";
 import AIStrategies from "./pages/AIStrategies";
 import LiveTrading from "./pages/LiveTrading";
@@ -22,6 +21,18 @@ import CapitalAllocationStart from "./pages/CapitalAllocationStart";
 import CapitalAllocationDashboard from "./pages/CapitalAllocationDashboard";
 import CapitalAllocationAnalytics from "./pages/CapitalAllocationAnalytics";
 import CapitalAllocationMethodology from "./pages/CapitalAllocationMethodology";
+import AboutUs from "./pages/AboutUs";
+import Careers from "./pages/Careers";
+import Press from "./pages/Press";
+import Contact from "./pages/Contact";
+import ApiDocumentation from "./pages/ApiDocumentation";
+import CaseStudies from "./pages/CaseStudies";
+import HelpCenter from "./pages/HelpCenter";
+import StrategyGuide from "./pages/StrategyGuide";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
+import RiskDisclosure from "./pages/RiskDisclosure";
+import Compliance from "./pages/Compliance";
 
 const queryClient = new QueryClient();
 
@@ -50,24 +61,23 @@ const App = () => (
           <Route path="/capital-allocation/analytics" element={<CapitalAllocationAnalytics />} />
           <Route path="/capital-allocation/methodology" element={<CapitalAllocationMethodology />} />
           {/* Product Pages */}
-          <Route path="/api-documentation" element={<ComingSoon />} />
+          <Route path="/api-documentation" element={<ApiDocumentation />} />
           {/* Company Pages */}
-          <Route path="/about-us" element={<ComingSoon />} />
-          <Route path="/careers" element={<ComingSoon />} />
-          <Route path="/press" element={<ComingSoon />} />
-          <Route path="/contact" element={<ComingSoon />} />
+          <Route path="/about-us" element={<AboutUs />} />
+          <Route path="/careers" element={<Careers />} />
+          <Route path="/press" element={<Press />} />
+          <Route path="/contact" element={<Contact />} />
           {/* Resources Pages */}
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/:slug" element={<BlogPostPage />} />
-          <Route path="/case-studies" element={<ComingSoon />} />
-          <Route path="/help-center" element={<ComingSoon />} />
-          <Route path="/strategy-guide" element={<ComingSoon />} />
+          <Route path="/case-studies" element={<CaseStudies />} />
+          <Route path="/help-center" element={<HelpCenter />} />
+          <Route path="/strategy-guide" element={<StrategyGuide />} />
           {/* Legal Pages */}
-          <Route path="/privacy-policy" element={<ComingSoon />} />
-          <Route path="/terms-of-service" element={<ComingSoon />} />
-          <Route path="/risk-disclosure" element={<ComingSoon />} />
-          <Route path="/compliance" element={<ComingSoon />} />
-          <Route path="/coming-soon" element={<ComingSoon />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
+          <Route path="/risk-disclosure" element={<RiskDisclosure />} />
+          <Route path="/compliance" element={<Compliance />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
