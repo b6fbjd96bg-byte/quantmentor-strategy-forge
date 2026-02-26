@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { FileText, Cpu, TestTube2, Rocket, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const steps = [
   {
@@ -102,13 +103,13 @@ const HowItWorks = () => {
           transition={{ duration: 0.6, delay: 0.6 }}
           className="text-center mt-16"
         >
-          <a
-            href="#"
+          <Link
+            to="/auth"
             className="inline-flex items-center gap-2 text-primary font-semibold hover:gap-4 transition-all duration-300"
           >
             Start Your Journey
             <ArrowRight className="w-5 h-5" />
-          </a>
+          </Link>
         </motion.div>
       </div>
     </section>

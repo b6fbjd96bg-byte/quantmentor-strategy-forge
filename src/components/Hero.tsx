@@ -1,8 +1,13 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Play, Zap, Shield, BarChart3 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import DemoVideoModal from './DemoVideoModal';
 
 const Hero = () => {
+  const [showDemo, setShowDemo] = useState(false);
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-hero pt-20">
       {/* Background Effects */}
@@ -59,11 +64,13 @@ const Hero = () => {
             transition={{ duration: 0.7, delay: 0.3 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16"
           >
-            <Button variant="hero" size="xl" className="group">
-              Start Free Trial
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Button>
-            <Button variant="heroOutline" size="xl" className="group">
+            <Link to="/auth">
+              <Button variant="hero" size="xl" className="group">
+                Start Free Trial
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </Link>
+            <Button variant="heroOutline" size="xl" className="group" onClick={() => setShowDemo(true)}>
               <Play className="w-5 h-5" />
               See How It Works
             </Button>
@@ -99,6 +106,9 @@ const Hero = () => {
 
       {/* Bottom Gradient */}
       <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
+
+      {/* Demo Modal */}
+      <DemoVideoModal open={showDemo} onClose={() => setShowDemo(false)} />
     </section>
   );
 };

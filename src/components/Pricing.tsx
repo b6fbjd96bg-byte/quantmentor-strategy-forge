@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Check, Zap } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const plans = [
   {
@@ -143,13 +144,15 @@ const Pricing = () => {
               </ul>
               
               {/* CTA */}
-              <Button 
-                variant={plan.variant} 
-                size="lg" 
-                className="w-full"
-              >
-                {plan.cta}
-              </Button>
+              <Link to={plan.cta === 'Contact Sales' ? '/contact' : '/auth'}>
+                <Button 
+                  variant={plan.variant} 
+                  size="lg" 
+                  className="w-full"
+                >
+                  {plan.cta}
+                </Button>
+              </Link>
             </motion.div>
           ))}
         </div>
