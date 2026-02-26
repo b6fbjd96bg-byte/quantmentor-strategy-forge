@@ -328,6 +328,11 @@ const Dashboard = () => {
           </div>
         </motion.div>
       </main>
+
+      {/* Onboarding Tour */}
+      {showOnboarding && (
+        <OnboardingTour onComplete={() => setShowOnboarding(false)} />
+      )}
     </div>
   );
 };
