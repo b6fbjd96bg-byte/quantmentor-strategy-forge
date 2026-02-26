@@ -61,7 +61,16 @@ const Dashboard = () => {
         supabase.from('strategy_bots').select('id, status').eq('user_id', userId).eq('status', 'running'),
         supabase.from('trade_journal').select('profit_loss').eq('user_id', userId).eq('status', 'closed'),
       ]);
-      if (profileRes.data) setProfile(profileRes.data);
+      if (profileRes.data) {
+        setProfile(profileRes.data);
+        // Show onboarding for new users (no trading_experience set or not 'onboarded')
+        if (!profileRes.data.trading_experience || profileRes.data.trading_experience !== 'onboarded') {
+          setShowOnboarding(true);
+        }
+      } else {
+        // No profile yet — new user, show onboarding
+        setShowOnboarding(true);
+      }
       if (strategiesRes.data) setStrategies(strategiesRes.data);
       
       // Calculate total trades and P&L from both bot_trades and trade_journal
