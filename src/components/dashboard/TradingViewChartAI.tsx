@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Upload, Image as ImageIcon, X, Sparkles, Loader2, Send, Bot,
   TrendingUp, TrendingDown, Target, Shield, BarChart3, Activity,
-  AlertTriangle, CheckCircle, ArrowUpRight, ArrowDownRight, Trash2, MessageCircle
+  AlertTriangle, CheckCircle, ArrowUpRight, ArrowDownRight, Trash2, MessageCircle,
+  Crosshair, LogOut as ExitIcon, Plus, Pause, Zap, ShieldAlert, Clock
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
