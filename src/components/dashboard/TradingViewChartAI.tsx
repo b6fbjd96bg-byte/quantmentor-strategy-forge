@@ -59,6 +59,32 @@ interface ChatMessage {
   timestamp: Date;
 }
 
+interface PositionAdvice {
+  status: string;
+  action: string;
+  confidence: number;
+  direction?: string;
+  current_side?: string;
+  urgency?: string;
+  reasoning: string;
+  entry_price?: string;
+  stop_loss?: string;
+  stop_loss_update?: string;
+  take_profit_1?: string;
+  take_profit_2?: string;
+  take_profit_update?: string;
+  risk_reward_ratio?: string;
+  position_size_advice?: string;
+  capital_protection_notes?: string[];
+  market_conditions_check?: string;
+  wait_reason?: string;
+  current_risk_level?: string;
+  unrealized_pnl_assessment?: string;
+  trailing_stop_advice?: string;
+  exit_strategy?: string;
+  add_conditions?: string;
+}
+
 const TradingViewChartAI = () => {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
