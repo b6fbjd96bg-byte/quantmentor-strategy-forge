@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Upload, Image as ImageIcon, X, Sparkles, Loader2, Send, Bot,
   TrendingUp, TrendingDown, Target, Shield, BarChart3, Activity,
-  AlertTriangle, CheckCircle, ArrowUpRight, ArrowDownRight, Trash2, MessageCircle
+  AlertTriangle, CheckCircle, ArrowUpRight, ArrowDownRight, Trash2, MessageCircle,
+  Crosshair, LogOut as ExitIcon, Plus, Pause, Zap, ShieldAlert, Clock
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -58,6 +59,32 @@ interface ChatMessage {
   timestamp: Date;
 }
 
+interface PositionAdvice {
+  status: string;
+  action: string;
+  confidence: number;
+  direction?: string;
+  current_side?: string;
+  urgency?: string;
+  reasoning: string;
+  entry_price?: string;
+  stop_loss?: string;
+  stop_loss_update?: string;
+  take_profit_1?: string;
+  take_profit_2?: string;
+  take_profit_update?: string;
+  risk_reward_ratio?: string;
+  position_size_advice?: string;
+  capital_protection_notes?: string[];
+  market_conditions_check?: string;
+  wait_reason?: string;
+  current_risk_level?: string;
+  unrealized_pnl_assessment?: string;
+  trailing_stop_advice?: string;
+  exit_strategy?: string;
+  add_conditions?: string;
+}
+
 const TradingViewChartAI = () => {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
@@ -65,6 +92,13 @@ const TradingViewChartAI = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [chartImage, setChartImage] = useState<string | null>(null);
+  
+  // Position Advisor state
+  const [showAdvisor, setShowAdvisor] = useState(false);
+  const [inTrade, setInTrade] = useState<boolean | null>(null);
+  const [tradeSide, setTradeSide] = useState<'BUY' | 'SELL' | null>(null);
+  const [isAdvisorLoading, setIsAdvisorLoading] = useState(false);
+  const [positionAdvice, setPositionAdvice] = useState<PositionAdvice | null>(null);
   
   // Chat state for follow-ups
   const [showChat, setShowChat] = useState(false);
@@ -219,6 +253,84 @@ const TradingViewChartAI = () => {
     setChartImage(null);
     setShowChat(false);
     setChatMessages([]);
+    setShowAdvisor(false);
+    setInTrade(null);
+    setTradeSide(null);
+    setPositionAdvice(null);
+  };
+
+  const getPositionAdvice = async () => {
+    if (!analysis || !imageBase64) return;
+    if (inTrade && !tradeSide) {
+      toast.error('Please select your trade side (Buy/Sell)');
+      return;
+    }
+    setIsAdvisorLoading(true);
+    setPositionAdvice(null);
+
+    try {
+      const userContent = inTrade
+        ? `Previous chart analysis: ${JSON.stringify(analysis)}\n\nI am currently IN a trade on the ${tradeSide} side. Based on the chart analysis, should I HOLD, EXIT, ADD MORE, or take PARTIAL EXIT? Prioritize protecting my capital above all else.`
+        : `Previous chart analysis: ${JSON.stringify(analysis)}\n\nI am NOT currently in a trade. Based on the chart analysis, should I BUY, SELL (short), or WAIT for a better setup? Only recommend entry if the setup is very clear and risk is manageable.`;
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/predict-chart`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          mode: 'position-advisor',
+          messages: [{ role: 'user', content: userContent, imageBase64 }],
+        }),
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || 'Advisor failed');
+      }
+
+      const data = await response.json();
+      setPositionAdvice(data);
+      toast.success('Position advice generated!');
+    } catch (error) {
+      console.error('Advisor error:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to get advice');
+    } finally {
+      setIsAdvisorLoading(false);
+    }
+  };
+
+  const getAdviceActionColor = (action: string) => {
+    const a = action?.toUpperCase() || '';
+    if (a.includes('BUY') || a.includes('ADD')) return 'text-accent bg-accent/10 border-accent/30';
+    if (a.includes('SELL') || a.includes('EXIT')) return 'text-destructive bg-destructive/10 border-destructive/30';
+    if (a.includes('HOLD') || a.includes('PARTIAL')) return 'text-yellow-400 bg-yellow-500/10 border-yellow-500/30';
+    if (a.includes('WAIT')) return 'text-blue-400 bg-blue-500/10 border-blue-500/30';
+    return 'text-muted-foreground bg-muted/10 border-border';
+  };
+
+  const getAdviceActionIcon = (action: string) => {
+    const a = action?.toUpperCase() || '';
+    if (a.includes('BUY') || a.includes('ADD')) return <TrendingUp className="w-6 h-6" />;
+    if (a.includes('EXIT')) return <ExitIcon className="w-6 h-6" />;
+    if (a.includes('SELL')) return <TrendingDown className="w-6 h-6" />;
+    if (a.includes('HOLD')) return <Pause className="w-6 h-6" />;
+    if (a.includes('WAIT')) return <Clock className="w-6 h-6" />;
+    return <Activity className="w-6 h-6" />;
+  };
+
+  const getUrgencyColor = (urgency: string) => {
+    if (urgency === 'IMMEDIATE') return 'text-destructive bg-destructive/10';
+    if (urgency === 'SOON') return 'text-yellow-400 bg-yellow-500/10';
+    return 'text-accent bg-accent/10';
+  };
+
+  const getRiskLevelColor = (level: string) => {
+    if (level === 'CRITICAL') return 'text-destructive animate-pulse';
+    if (level === 'HIGH') return 'text-destructive';
+    if (level === 'MEDIUM') return 'text-yellow-400';
+    return 'text-accent';
   };
 
   const getActionColor = (action: string) => {
@@ -353,7 +465,11 @@ const TradingViewChartAI = () => {
             </span>
           )}
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <Button variant="hero" size="sm" onClick={() => { setShowAdvisor(!showAdvisor); if (showAdvisor) { setPositionAdvice(null); setInTrade(null); setTradeSide(null); } }} className="gap-2">
+            <Crosshair className="w-4 h-4" />
+            {showAdvisor ? 'Hide Advisor' : '🛡️ Trade Advisor'}
+          </Button>
           <Button variant="outline" size="sm" onClick={() => setShowChat(!showChat)} className="gap-2">
             <MessageCircle className="w-4 h-4" />
             {showChat ? 'Hide Chat' : 'Ask Follow-up'}
@@ -573,6 +689,250 @@ const TradingViewChartAI = () => {
           </motion.div>
         </div>
       </div>
+
+      {/* Smart Trade Advisor */}
+      <AnimatePresence>
+        {showAdvisor && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="bg-card rounded-2xl border-2 border-primary/30 overflow-hidden"
+          >
+            <div className="p-5 border-b border-border bg-gradient-to-r from-primary/5 to-accent/5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
+                  <ShieldAlert className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg">🛡️ Smart Trade Advisor</h3>
+                  <p className="text-xs text-muted-foreground">Capital protection is our #1 priority</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6">
+              {!positionAdvice && !isAdvisorLoading && (
+                <div className="space-y-6">
+                  {/* Step 1: Are you in a trade? */}
+                  <div>
+                    <p className="font-medium mb-3">Are you currently in a trade?</p>
+                    <div className="flex gap-3">
+                      <Button
+                        variant={inTrade === false ? 'hero' : 'outline'}
+                        onClick={() => { setInTrade(false); setTradeSide(null); }}
+                        className="gap-2 flex-1"
+                      >
+                        <Crosshair className="w-4 h-4" />
+                        Not in Trade
+                      </Button>
+                      <Button
+                        variant={inTrade === true ? 'hero' : 'outline'}
+                        onClick={() => setInTrade(true)}
+                        className="gap-2 flex-1"
+                      >
+                        <Activity className="w-4 h-4" />
+                        In Trade
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Step 2: If in trade, which side? */}
+                  {inTrade && (
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                      <p className="font-medium mb-3">Which side are you on?</p>
+                      <div className="flex gap-3">
+                        <Button
+                          variant={tradeSide === 'BUY' ? 'default' : 'outline'}
+                          onClick={() => setTradeSide('BUY')}
+                          className={`gap-2 flex-1 ${tradeSide === 'BUY' ? 'bg-accent hover:bg-accent/90 text-accent-foreground' : ''}`}
+                        >
+                          <TrendingUp className="w-4 h-4" />
+                          Buy Side (Long)
+                        </Button>
+                        <Button
+                          variant={tradeSide === 'SELL' ? 'default' : 'outline'}
+                          onClick={() => setTradeSide('SELL')}
+                          className={`gap-2 flex-1 ${tradeSide === 'SELL' ? 'bg-destructive hover:bg-destructive/90 text-destructive-foreground' : ''}`}
+                        >
+                          <TrendingDown className="w-4 h-4" />
+                          Sell Side (Short)
+                        </Button>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Get Advice Button */}
+                  {inTrade !== null && (inTrade === false || tradeSide !== null) && (
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                      <Button variant="hero" size="lg" onClick={getPositionAdvice} className="w-full gap-2">
+                        <Zap className="w-5 h-5" />
+                        {inTrade ? 'Get Position Advice' : 'Should I Enter This Trade?'}
+                      </Button>
+                    </motion.div>
+                  )}
+                </div>
+              )}
+
+              {/* Loading */}
+              {isAdvisorLoading && (
+                <div className="flex flex-col items-center py-8 gap-3">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                  <p className="text-sm text-muted-foreground">Analyzing position with capital protection focus...</p>
+                </div>
+              )}
+
+              {/* Advice Result */}
+              {positionAdvice && !isAdvisorLoading && (
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
+                  {/* Action Hero */}
+                  <div className={`rounded-2xl border-2 p-6 ${getAdviceActionColor(positionAdvice.action)}`}>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        {getAdviceActionIcon(positionAdvice.action)}
+                        <div>
+                          <h2 className="text-2xl font-bold">{positionAdvice.action?.replace('_', ' ')}</h2>
+                          <p className="text-sm opacity-75">
+                            {positionAdvice.status === 'IN_TRADE' ? `Current side: ${positionAdvice.current_side}` : 'New Position Advice'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-3xl font-bold">{positionAdvice.confidence || 0}%</div>
+                        <p className="text-sm opacity-75">Confidence</p>
+                      </div>
+                    </div>
+                    {positionAdvice.urgency && (
+                      <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${getUrgencyColor(positionAdvice.urgency)}`}>
+                        <Clock className="w-3 h-3" />
+                        {positionAdvice.urgency}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Reasoning */}
+                  <div className="bg-muted/30 rounded-xl p-4">
+                    <h4 className="font-bold text-sm mb-2 flex items-center gap-2">
+                      <Bot className="w-4 h-4 text-primary" /> AI Reasoning
+                    </h4>
+                    <p className="text-sm text-muted-foreground">{positionAdvice.reasoning}</p>
+                  </div>
+
+                  {/* Key Levels Grid */}
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {positionAdvice.entry_price && (
+                      <div className="p-3 rounded-xl bg-primary/5 border border-primary/20">
+                        <p className="text-xs text-muted-foreground">Entry Price</p>
+                        <p className="font-bold text-primary">{positionAdvice.entry_price}</p>
+                      </div>
+                    )}
+                    {(positionAdvice.stop_loss || positionAdvice.stop_loss_update) && (
+                      <div className="p-3 rounded-xl bg-destructive/5 border border-destructive/20">
+                        <p className="text-xs text-muted-foreground">Stop Loss</p>
+                        <p className="font-bold text-destructive">{positionAdvice.stop_loss || positionAdvice.stop_loss_update}</p>
+                      </div>
+                    )}
+                    {positionAdvice.take_profit_1 && (
+                      <div className="p-3 rounded-xl bg-accent/5 border border-accent/20">
+                        <p className="text-xs text-muted-foreground">Take Profit 1</p>
+                        <p className="font-bold text-accent">{positionAdvice.take_profit_1}</p>
+                      </div>
+                    )}
+                    {positionAdvice.take_profit_2 && (
+                      <div className="p-3 rounded-xl bg-accent/5 border border-accent/20">
+                        <p className="text-xs text-muted-foreground">Take Profit 2</p>
+                        <p className="font-bold text-accent">{positionAdvice.take_profit_2}</p>
+                      </div>
+                    )}
+                    {positionAdvice.take_profit_update && (
+                      <div className="p-3 rounded-xl bg-accent/5 border border-accent/20">
+                        <p className="text-xs text-muted-foreground">Updated TP</p>
+                        <p className="font-bold text-accent">{positionAdvice.take_profit_update}</p>
+                      </div>
+                    )}
+                    {positionAdvice.risk_reward_ratio && (
+                      <div className="p-3 rounded-xl bg-muted/30 border border-border">
+                        <p className="text-xs text-muted-foreground">Risk:Reward</p>
+                        <p className="font-bold">{positionAdvice.risk_reward_ratio}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Risk Level for In-Trade */}
+                  {positionAdvice.current_risk_level && (
+                    <div className="flex items-center justify-between p-4 rounded-xl bg-muted/30 border border-border">
+                      <span className="text-sm font-medium">Current Risk Level</span>
+                      <span className={`font-bold text-lg ${getRiskLevelColor(positionAdvice.current_risk_level)}`}>
+                        {positionAdvice.current_risk_level}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Additional Info */}
+                  {positionAdvice.position_size_advice && (
+                    <div className="p-3 rounded-xl bg-primary/5 border border-primary/20">
+                      <p className="text-xs font-bold text-primary mb-1">Position Sizing</p>
+                      <p className="text-sm text-muted-foreground">{positionAdvice.position_size_advice}</p>
+                    </div>
+                  )}
+
+                  {positionAdvice.trailing_stop_advice && (
+                    <div className="p-3 rounded-xl bg-muted/30 border border-border">
+                      <p className="text-xs font-bold mb-1">Trailing Stop</p>
+                      <p className="text-sm text-muted-foreground">{positionAdvice.trailing_stop_advice}</p>
+                    </div>
+                  )}
+
+                  {positionAdvice.exit_strategy && (
+                    <div className="p-3 rounded-xl bg-yellow-500/5 border border-yellow-500/20">
+                      <p className="text-xs font-bold text-yellow-400 mb-1">Exit Strategy</p>
+                      <p className="text-sm text-muted-foreground">{positionAdvice.exit_strategy}</p>
+                    </div>
+                  )}
+
+                  {positionAdvice.wait_reason && (
+                    <div className="p-3 rounded-xl bg-blue-500/5 border border-blue-500/20">
+                      <p className="text-xs font-bold text-blue-400 mb-1">Why Wait?</p>
+                      <p className="text-sm text-muted-foreground">{positionAdvice.wait_reason}</p>
+                    </div>
+                  )}
+
+                  {positionAdvice.market_conditions_check && (
+                    <div className="p-3 rounded-xl bg-muted/30 border border-border">
+                      <p className="text-xs font-bold mb-1">Market Conditions</p>
+                      <p className="text-sm text-muted-foreground">{positionAdvice.market_conditions_check}</p>
+                    </div>
+                  )}
+
+                  {/* Capital Protection Notes */}
+                  {positionAdvice.capital_protection_notes && positionAdvice.capital_protection_notes.length > 0 && (
+                    <div className="p-4 rounded-xl bg-destructive/5 border border-destructive/20">
+                      <h4 className="text-sm font-bold text-destructive flex items-center gap-2 mb-2">
+                        <ShieldAlert className="w-4 h-4" />
+                        Capital Protection Warnings
+                      </h4>
+                      <ul className="space-y-1">
+                        {positionAdvice.capital_protection_notes.map((note, i) => (
+                          <li key={i} className="text-xs text-muted-foreground flex items-start gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-destructive mt-1.5 flex-shrink-0" />
+                            {note}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Reset */}
+                  <Button variant="outline" size="sm" onClick={() => { setPositionAdvice(null); setInTrade(null); setTradeSide(null); }} className="gap-2">
+                    <Crosshair className="w-4 h-4" />
+                    Ask Again
+                  </Button>
+                </motion.div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Follow-up Chat */}
       <AnimatePresence>
