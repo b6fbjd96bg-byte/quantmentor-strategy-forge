@@ -253,6 +253,84 @@ const TradingViewChartAI = () => {
     setChartImage(null);
     setShowChat(false);
     setChatMessages([]);
+    setShowAdvisor(false);
+    setInTrade(null);
+    setTradeSide(null);
+    setPositionAdvice(null);
+  };
+
+  const getPositionAdvice = async () => {
+    if (!analysis || !imageBase64) return;
+    if (inTrade && !tradeSide) {
+      toast.error('Please select your trade side (Buy/Sell)');
+      return;
+    }
+    setIsAdvisorLoading(true);
+    setPositionAdvice(null);
+
+    try {
+      const userContent = inTrade
+        ? `Previous chart analysis: ${JSON.stringify(analysis)}\n\nI am currently IN a trade on the ${tradeSide} side. Based on the chart analysis, should I HOLD, EXIT, ADD MORE, or take PARTIAL EXIT? Prioritize protecting my capital above all else.`
+        : `Previous chart analysis: ${JSON.stringify(analysis)}\n\nI am NOT currently in a trade. Based on the chart analysis, should I BUY, SELL (short), or WAIT for a better setup? Only recommend entry if the setup is very clear and risk is manageable.`;
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/predict-chart`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          mode: 'position-advisor',
+          messages: [{ role: 'user', content: userContent, imageBase64 }],
+        }),
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || 'Advisor failed');
+      }
+
+      const data = await response.json();
+      setPositionAdvice(data);
+      toast.success('Position advice generated!');
+    } catch (error) {
+      console.error('Advisor error:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to get advice');
+    } finally {
+      setIsAdvisorLoading(false);
+    }
+  };
+
+  const getAdviceActionColor = (action: string) => {
+    const a = action?.toUpperCase() || '';
+    if (a.includes('BUY') || a.includes('ADD')) return 'text-accent bg-accent/10 border-accent/30';
+    if (a.includes('SELL') || a.includes('EXIT')) return 'text-destructive bg-destructive/10 border-destructive/30';
+    if (a.includes('HOLD') || a.includes('PARTIAL')) return 'text-yellow-400 bg-yellow-500/10 border-yellow-500/30';
+    if (a.includes('WAIT')) return 'text-blue-400 bg-blue-500/10 border-blue-500/30';
+    return 'text-muted-foreground bg-muted/10 border-border';
+  };
+
+  const getAdviceActionIcon = (action: string) => {
+    const a = action?.toUpperCase() || '';
+    if (a.includes('BUY') || a.includes('ADD')) return <TrendingUp className="w-6 h-6" />;
+    if (a.includes('EXIT')) return <ExitIcon className="w-6 h-6" />;
+    if (a.includes('SELL')) return <TrendingDown className="w-6 h-6" />;
+    if (a.includes('HOLD')) return <Pause className="w-6 h-6" />;
+    if (a.includes('WAIT')) return <Clock className="w-6 h-6" />;
+    return <Activity className="w-6 h-6" />;
+  };
+
+  const getUrgencyColor = (urgency: string) => {
+    if (urgency === 'IMMEDIATE') return 'text-destructive bg-destructive/10';
+    if (urgency === 'SOON') return 'text-yellow-400 bg-yellow-500/10';
+    return 'text-accent bg-accent/10';
+  };
+
+  const getRiskLevelColor = (level: string) => {
+    if (level === 'CRITICAL') return 'text-destructive animate-pulse';
+    if (level === 'HIGH') return 'text-destructive';
+    if (level === 'MEDIUM') return 'text-yellow-400';
+    return 'text-accent';
   };
 
   const getActionColor = (action: string) => {
