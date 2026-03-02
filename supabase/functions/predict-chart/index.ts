@@ -171,7 +171,56 @@ CRITICAL RULES:
             }
           ]
         });
-      } else {
+    } else if (isPositionAdvisor) {
+      // Non-streaming for position advisor JSON response
+      const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash',
+          messages: aiMessages,
+          stream: false,
+        }),
+      });
+
+      if (!response.ok) {
+        if (response.status === 429) {
+          return new Response(
+            JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }),
+            { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        if (response.status === 402) {
+          return new Response(
+            JSON.stringify({ error: 'AI credits exhausted. Please add credits.' }),
+            { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        const errorText = await response.text();
+        console.error('AI Gateway error:', response.status, errorText);
+        throw new Error(`AI Gateway error: ${response.status}`);
+      }
+
+      const result = await response.json();
+      const content = result.choices?.[0]?.message?.content || '';
+      
+      let parsed;
+      try {
+        const cleaned = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+        parsed = JSON.parse(cleaned);
+      } catch {
+        console.error('Failed to parse position advisor response:', content);
+        parsed = { error: 'Failed to parse response', raw: content };
+      }
+
+      return new Response(
+        JSON.stringify(parsed),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    } else {
         aiMessages.push({ role: msg.role, content: msg.content });
       }
     }
