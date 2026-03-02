@@ -465,7 +465,11 @@ const TradingViewChartAI = () => {
             </span>
           )}
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <Button variant="hero" size="sm" onClick={() => { setShowAdvisor(!showAdvisor); if (showAdvisor) { setPositionAdvice(null); setInTrade(null); setTradeSide(null); } }} className="gap-2">
+            <Crosshair className="w-4 h-4" />
+            {showAdvisor ? 'Hide Advisor' : '🛡️ Trade Advisor'}
+          </Button>
           <Button variant="outline" size="sm" onClick={() => setShowChat(!showChat)} className="gap-2">
             <MessageCircle className="w-4 h-4" />
             {showChat ? 'Hide Chat' : 'Ask Follow-up'}
