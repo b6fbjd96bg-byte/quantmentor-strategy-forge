@@ -93,6 +93,13 @@ const TradingViewChartAI = () => {
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [chartImage, setChartImage] = useState<string | null>(null);
   
+  // Position Advisor state
+  const [showAdvisor, setShowAdvisor] = useState(false);
+  const [inTrade, setInTrade] = useState<boolean | null>(null);
+  const [tradeSide, setTradeSide] = useState<'BUY' | 'SELL' | null>(null);
+  const [isAdvisorLoading, setIsAdvisorLoading] = useState(false);
+  const [positionAdvice, setPositionAdvice] = useState<PositionAdvice | null>(null);
+  
   // Chat state for follow-ups
   const [showChat, setShowChat] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
