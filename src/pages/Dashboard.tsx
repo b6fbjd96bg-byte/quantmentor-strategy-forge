@@ -11,6 +11,10 @@ import {
 } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 import OnboardingTour from '@/components/onboarding/OnboardingTour';
+import QuickStatsRow from '@/components/dashboard/QuickStatsRow';
+import FlipTracker from '@/components/dashboard/FlipTracker';
+import LiveBotStatus from '@/components/dashboard/LiveBotStatus';
+import IndianMarketBanner from '@/components/dashboard/IndianMarketBanner';
 
 interface Strategy {
   id: string;
@@ -38,6 +42,7 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [currency, setCurrency] = useState<"USD" | "INR">("USD");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -224,6 +229,19 @@ const Dashboard = () => {
               <p className="font-display text-2xl font-bold">{stat.value}</p>
             </motion.div>
           ))}
+        </div>
+
+        {/* New Dashboard Upgrades */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
+          <FlipTracker currentBalance={1000 + totalPnl} />
+          <LiveBotStatus bots={activeBots > 0 ? [
+            { name: "RSI Momentum Bot", status: "running", lastSignal: "2m ago", todayPnl: totalPnl * 0.4 },
+            { name: "EMA Cross Bot", status: "running", lastSignal: "15m ago", todayPnl: totalPnl * 0.3 },
+          ] : []} />
+        </div>
+
+        <div className="mb-8">
+          <IndianMarketBanner currency={currency} onCurrencyToggle={() => setCurrency(c => c === "USD" ? "INR" : "USD")} />
         </div>
 
         {/* Module Cards */}

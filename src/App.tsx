@@ -33,6 +33,10 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import RiskDisclosure from "./pages/RiskDisclosure";
 import Compliance from "./pages/Compliance";
+import StrategyMarketplace from "./pages/StrategyMarketplace";
+import Leaderboard from "./pages/Leaderboard";
+import RiskManager from "./pages/RiskManager";
+import NoCodeStrategyBuilder from "./pages/NoCodeStrategyBuilder";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +57,10 @@ const App = () => (
           <Route path="/live-trading" element={<LiveTrading />} />
           <Route path="/trade-journal" element={<TradeJournal />} />
           <Route path="/analytics" element={<Analytics />} />
+          <Route path="/marketplace" element={<StrategyMarketplace />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="/risk-manager" element={<RiskManager />} />
+          <Route path="/strategy-builder" element={<NoCodeStrategyBuilder />} />
           <Route path="/settings" element={<Settings />} />
           {/* Capital Allocation Engine */}
           <Route path="/capital-allocation" element={<CapitalAllocation />} />

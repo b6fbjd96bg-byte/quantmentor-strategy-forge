@@ -416,6 +416,89 @@ export type Database = {
         }
         Relationships: []
       }
+      published_strategies: {
+        Row: {
+          created_at: string
+          description: string | null
+          entry_rules: string | null
+          exit_rules: string | null
+          followers_count: number | null
+          id: string
+          is_published: boolean | null
+          is_verified: boolean | null
+          markets: string[]
+          max_drawdown: number | null
+          name: string
+          paper_pnl: number | null
+          paper_win_rate: number | null
+          profit_factor: number | null
+          strategy_id: string | null
+          strategy_type: string
+          tags: string[] | null
+          timeframe: string | null
+          total_trades: number | null
+          updated_at: string
+          user_id: string
+          win_rate: number | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          entry_rules?: string | null
+          exit_rules?: string | null
+          followers_count?: number | null
+          id?: string
+          is_published?: boolean | null
+          is_verified?: boolean | null
+          markets?: string[]
+          max_drawdown?: number | null
+          name: string
+          paper_pnl?: number | null
+          paper_win_rate?: number | null
+          profit_factor?: number | null
+          strategy_id?: string | null
+          strategy_type: string
+          tags?: string[] | null
+          timeframe?: string | null
+          total_trades?: number | null
+          updated_at?: string
+          user_id: string
+          win_rate?: number | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          entry_rules?: string | null
+          exit_rules?: string | null
+          followers_count?: number | null
+          id?: string
+          is_published?: boolean | null
+          is_verified?: boolean | null
+          markets?: string[]
+          max_drawdown?: number | null
+          name?: string
+          paper_pnl?: number | null
+          paper_win_rate?: number | null
+          profit_factor?: number | null
+          strategy_id?: string | null
+          strategy_type?: string
+          tags?: string[] | null
+          timeframe?: string | null
+          total_trades?: number | null
+          updated_at?: string
+          user_id?: string
+          win_rate?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "published_strategies_strategy_id_fkey"
+            columns: ["strategy_id"]
+            isOneToOne: false
+            referencedRelation: "strategies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       qualified_strategies: {
         Row: {
           correlation_factor: number
@@ -530,6 +613,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      risk_settings: {
+        Row: {
+          consecutive_losses_today: number | null
+          created_at: string
+          daily_loss_today: number | null
+          daily_trade_limit: number | null
+          id: string
+          is_active: boolean | null
+          max_consecutive_losses: number | null
+          max_daily_loss_pct: number | null
+          max_loss_per_trade_pct: number | null
+          position_size_pct: number | null
+          trades_today: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          consecutive_losses_today?: number | null
+          created_at?: string
+          daily_loss_today?: number | null
+          daily_trade_limit?: number | null
+          id?: string
+          is_active?: boolean | null
+          max_consecutive_losses?: number | null
+          max_daily_loss_pct?: number | null
+          max_loss_per_trade_pct?: number | null
+          position_size_pct?: number | null
+          trades_today?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          consecutive_losses_today?: number | null
+          created_at?: string
+          daily_loss_today?: number | null
+          daily_trade_limit?: number | null
+          id?: string
+          is_active?: boolean | null
+          max_consecutive_losses?: number | null
+          max_daily_loss_pct?: number | null
+          max_loss_per_trade_pct?: number | null
+          position_size_pct?: number | null
+          trades_today?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       strategies: {
         Row: {
@@ -706,6 +837,35 @@ export type Database = {
             columns: ["strategy_id"]
             isOneToOne: false
             referencedRelation: "strategies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      strategy_followers: {
+        Row: {
+          created_at: string
+          id: string
+          strategy_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          strategy_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          strategy_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "strategy_followers_strategy_id_fkey"
+            columns: ["strategy_id"]
+            isOneToOne: false
+            referencedRelation: "published_strategies"
             referencedColumns: ["id"]
           },
         ]
