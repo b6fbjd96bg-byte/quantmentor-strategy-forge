@@ -57,6 +57,10 @@ const App = () => (
           <Route path="/live-trading" element={<LiveTrading />} />
           <Route path="/trade-journal" element={<TradeJournal />} />
           <Route path="/analytics" element={<Analytics />} />
+          <Route path="/marketplace" element={<StrategyMarketplace />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="/risk-manager" element={<RiskManager />} />
+          <Route path="/strategy-builder" element={<NoCodeStrategyBuilder />} />
           <Route path="/settings" element={<Settings />} />
           {/* Capital Allocation Engine */}
           <Route path="/capital-allocation" element={<CapitalAllocation />} />
