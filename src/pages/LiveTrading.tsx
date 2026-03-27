@@ -10,6 +10,7 @@ import {
   ArrowDownRight, Clock, CheckCircle2, XCircle, RefreshCw, Bell,
   BookOpen, Wifi, WifiOff, AlertTriangle, Shield
 } from 'lucide-react';
+import ConnectExchangeModal from '@/components/dashboard/ConnectExchangeModal';
 
 interface BotTrade {
   id: string;
