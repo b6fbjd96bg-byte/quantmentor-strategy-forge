@@ -28,6 +28,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
+import ConnectExchangeModal from '@/components/dashboard/ConnectExchangeModal';
 
 interface Profile {
   full_name: string | null;
