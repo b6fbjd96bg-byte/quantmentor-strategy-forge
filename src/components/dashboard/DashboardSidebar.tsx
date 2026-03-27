@@ -20,9 +20,13 @@ const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
   { icon: TrendingUp, label: "Chart Analysis", path: "/chart-analysis" },
   { icon: Bot, label: "AI Strategies", path: "/ai-strategies" },
+  { icon: Store, label: "Marketplace", path: "/marketplace" },
+  { icon: Blocks, label: "Strategy Builder", path: "/strategy-builder" },
   { icon: LineChart, label: "Live Trading", path: "/live-trading" },
   { icon: BookOpen, label: "Trade Journal", path: "/trade-journal" },
   { icon: BarChart3, label: "Analytics", path: "/analytics" },
+  { icon: ShieldAlert, label: "Risk Manager", path: "/risk-manager" },
+  { icon: Trophy, label: "Leaderboard", path: "/leaderboard" },
   { icon: Settings, label: "Settings", path: "/settings" },
 ];
 
