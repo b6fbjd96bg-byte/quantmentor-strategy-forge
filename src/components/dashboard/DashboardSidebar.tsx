@@ -3,7 +3,8 @@ import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   LayoutDashboard, Bot, LineChart, BarChart3, Settings,
-  ChevronLeft, ChevronRight, LogOut, BookOpen, TrendingUp
+  ChevronLeft, ChevronRight, LogOut, BookOpen, TrendingUp,
+  Store, Trophy, ShieldAlert, Blocks
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
