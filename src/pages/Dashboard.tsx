@@ -42,6 +42,7 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [currency, setCurrency] = useState<"USD" | "INR">("USD");
   const navigate = useNavigate();
 
   useEffect(() => {
