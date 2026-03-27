@@ -52,6 +52,8 @@ const AIStrategies = () => {
   const [bots, setBots] = useState<StrategyBot[]>([]);
   const [backtests, setBacktests] = useState<BacktestResult[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [webhookId, setWebhookId] = useState<string | null>(null);
+  const [paperModes, setPaperModes] = useState<Record<string, boolean>>({});
   const [chartPreviewStrategy, setChartPreviewStrategy] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
