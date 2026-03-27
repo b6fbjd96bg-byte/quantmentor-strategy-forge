@@ -203,6 +203,34 @@ const SubmitStrategy = () => {
     }
   };
 
+  if (showAgent) {
+    return (
+      <StrategyAgentChat
+        strategy={{
+          name: formData.strategyName,
+          strategyType: formData.timeframe?.includes('Scalp') ? 'scalping' : formData.timeframe?.includes('Swing') ? 'swing' : 'momentum',
+          entryRules: formData.entryRules,
+          exitRules: formData.exitRules,
+          indicators: formData.indicators,
+          timeframe: formData.timeframe,
+          markets: formData.markets,
+          riskPerTrade: formData.maxRiskPerTrade,
+          stopLossType: formData.stopLossType,
+          takeProfitType: formData.takeProfitType,
+        }}
+        onApprove={() => {
+          setShowAgent(false);
+          setIsSubmitted(true);
+          toast.success('Strategy approved and deployed!');
+        }}
+        onBack={() => {
+          setShowAgent(false);
+          setCurrentStep(4);
+        }}
+      />
+    );
+  }
+
   if (isSubmitted) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
