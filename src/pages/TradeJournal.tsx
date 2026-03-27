@@ -189,6 +189,53 @@ const TradeJournal = () => {
               </p>
             </div>
             <Button 
+              variant="outline"
+              onClick={async () => {
+                toast({ title: "Importing trades...", description: "Fetching trades from connected exchanges." });
+                // Fetch bot trades and import them into the journal
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) return;
+                const { data: botTrades } = await supabase
+                  .from('bot_trades')
+                  .select('*')
+                  .eq('user_id', session.user.id)
+                  .eq('status', 'closed')
+                  .order('created_at', { ascending: false })
+                  .limit(20);
+                if (botTrades && botTrades.length > 0) {
+                  let imported = 0;
+                  for (const bt of botTrades) {
+                    const { error } = await supabase.from('trade_journal').insert({
+                      user_id: session.user.id,
+                      symbol: bt.symbol,
+                      trade_type: bt.side === 'long' ? 'long' : 'short',
+                      entry_price: bt.entry_price,
+                      exit_price: bt.exit_price,
+                      quantity: bt.quantity,
+                      entry_date: bt.entry_time,
+                      exit_date: bt.exit_time,
+                      status: 'closed',
+                      profit_loss: bt.profit_loss,
+                      profit_loss_percentage: bt.profit_loss_percentage,
+                      market: bt.broker || 'crypto',
+                      entry_reason: bt.entry_reason || 'Auto-imported from bot',
+                      exit_reason: bt.exit_reason,
+                      strategy_used: 'Bot Trade',
+                    });
+                    if (!error) imported++;
+                  }
+                  toast({ title: `${imported} trades imported`, description: "Your bot trades have been added to the journal." });
+                  fetchTrades();
+                } else {
+                  toast({ title: "No new trades", description: "No closed bot trades found to import." });
+                }
+              }}
+              className="gap-2"
+            >
+              <Download className="h-4 w-4" />
+              Auto-Import
+            </Button>
+            <Button 
               onClick={() => { setEditingTrade(null); setIsFormOpen(true); }}
               className="bg-primary hover:bg-primary/90"
             >
