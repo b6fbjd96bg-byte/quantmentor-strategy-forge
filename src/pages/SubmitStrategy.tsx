@@ -24,6 +24,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import StrategyChartPreview from '@/components/dashboard/StrategyChartPreview';
+import StrategyAgentChat from '@/components/dashboard/StrategyAgentChat';
 
 const steps = [
   { id: 1, title: 'Strategy Overview', icon: Target },
