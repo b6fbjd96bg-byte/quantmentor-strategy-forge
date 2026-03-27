@@ -10,6 +10,7 @@ import {
   ArrowDownRight, Clock, CheckCircle2, XCircle, RefreshCw, Bell,
   BookOpen, Wifi, WifiOff, AlertTriangle, Shield
 } from 'lucide-react';
+import ConnectExchangeModal from '@/components/dashboard/ConnectExchangeModal';
 
 interface BotTrade {
   id: string;
@@ -41,6 +42,8 @@ const LiveTrading = () => {
   const [closedTrades, setClosedTrades] = useState<BotTrade[]>([]);
   const [brokerConnections, setBrokerConnections] = useState<BrokerConnection[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [connectModalOpen, setConnectModalOpen] = useState(false);
+  const [preselectedBroker, setPreselectedBroker] = useState<string | undefined>();
   const navigate = useNavigate();
 
   const supportedBrokers = [
@@ -79,7 +82,15 @@ const LiveTrading = () => {
   const connectedBrokers = brokerConnections.filter(b => b.is_connected).length;
 
   const handleConnectBroker = (brokerId: string) => {
-    toast.info('Go to Settings → Broker Connection to set up API keys.');
+    setPreselectedBroker(brokerId);
+    setConnectModalOpen(true);
+  };
+
+  const reloadBrokers = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) return;
+    const { data } = await supabase.from('broker_connections').select('*').eq('user_id', session.user.id);
+    setBrokerConnections((data as BrokerConnection[]) || []);
   };
 
   const getStatusIcon = (status: string) => {
@@ -330,6 +341,12 @@ const LiveTrading = () => {
           </>
         )}
       </main>
+      <ConnectExchangeModal
+        open={connectModalOpen}
+        onOpenChange={setConnectModalOpen}
+        onConnected={reloadBrokers}
+        preselectedBroker={preselectedBroker}
+      />
     </div>
   );
 };

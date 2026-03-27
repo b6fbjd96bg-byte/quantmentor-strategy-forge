@@ -28,6 +28,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
+import ConnectExchangeModal from '@/components/dashboard/ConnectExchangeModal';
 
 interface Profile {
   full_name: string | null;
@@ -58,9 +59,16 @@ const Settings = () => {
     marketNews: false,
   });
 
-  const [connectedBrokers] = useState([
-    { name: 'Interactive Brokers', status: 'connected', lastSync: '2 min ago' },
-  ]);
+  const [connectedBrokers, setConnectedBrokers] = useState<any[]>([]);
+  const [connectModalOpen, setConnectModalOpen] = useState(false);
+
+  const fetchBrokerConnections = async (userId: string) => {
+    const { data } = await supabase
+      .from('broker_connections')
+      .select('*')
+      .eq('user_id', userId);
+    setConnectedBrokers((data || []).filter((b: any) => b.is_connected));
+  };
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -69,6 +77,7 @@ const Settings = () => {
       } else {
         setUser(session.user);
         fetchProfile(session.user.id);
+        fetchBrokerConnections(session.user.id);
       }
     });
   }, [navigate]);
@@ -370,32 +379,42 @@ const Settings = () => {
               >
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="font-display text-xl font-bold">Connected Brokers</h2>
-                  <Button variant="hero" size="sm" className="gap-2">
+                  <Button variant="hero" size="sm" className="gap-2" onClick={() => setConnectModalOpen(true)}>
                     <Link2 className="w-4 h-4" />
                     Connect New
                   </Button>
                 </div>
                 
                 <div className="space-y-4">
-                  {connectedBrokers.map((broker, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 rounded-xl bg-muted/30">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center">
-                          <Link2 className="w-6 h-6 text-accent" />
-                        </div>
-                        <div>
-                          <p className="font-medium">{broker.name}</p>
-                          <p className="text-sm text-muted-foreground">Last synced: {broker.lastSync}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="px-2 py-1 rounded-full bg-accent/20 text-accent text-xs font-medium">
-                          Connected
-                        </span>
-                        <Button variant="outline" size="sm">Disconnect</Button>
-                      </div>
+                  {connectedBrokers.length === 0 ? (
+                    <div className="p-8 text-center">
+                      <Link2 className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+                      <p className="text-muted-foreground mb-1">No brokers connected</p>
+                      <p className="text-xs text-muted-foreground">Click "Connect New" to add Zerodha, Upstox, Delta Exchange, or other brokers.</p>
                     </div>
-                  ))}
+                  ) : (
+                    connectedBrokers.map((broker: any, index: number) => (
+                      <div key={index} className="flex items-center justify-between p-4 rounded-xl bg-muted/30">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center">
+                            <Link2 className="w-6 h-6 text-accent" />
+                          </div>
+                          <div>
+                            <p className="font-medium capitalize">{broker.broker}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {broker.is_paper_trading ? 'Paper Trading' : 'Live'} · Last synced: {broker.last_synced_at ? new Date(broker.last_synced_at).toLocaleString() : 'N/A'}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="px-2 py-1 rounded-full bg-accent/20 text-accent text-xs font-medium">
+                            Connected
+                          </span>
+                          <Button variant="outline" size="sm">Disconnect</Button>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
 
                 <div className="mt-6 p-4 rounded-xl bg-muted/30 border border-dashed border-border">
@@ -483,6 +502,11 @@ const Settings = () => {
           </div>
         </div>
       </main>
+      <ConnectExchangeModal
+        open={connectModalOpen}
+        onOpenChange={setConnectModalOpen}
+        onConnected={() => user && fetchBrokerConnections(user.id)}
+      />
     </div>
   );
 };
