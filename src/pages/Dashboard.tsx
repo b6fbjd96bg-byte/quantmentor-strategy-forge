@@ -231,6 +231,19 @@ const Dashboard = () => {
           ))}
         </div>
 
+        {/* New Dashboard Upgrades */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
+          <FlipTracker currentBalance={1000 + totalPnl} />
+          <LiveBotStatus bots={activeBots > 0 ? [
+            { name: "RSI Momentum Bot", status: "running", lastSignal: "2m ago", todayPnl: totalPnl * 0.4 },
+            { name: "EMA Cross Bot", status: "running", lastSignal: "15m ago", todayPnl: totalPnl * 0.3 },
+          ] : []} />
+        </div>
+
+        <div className="mb-8">
+          <IndianMarketBanner currency={currency} onCurrencyToggle={() => setCurrency(c => c === "USD" ? "INR" : "USD")} />
+        </div>
+
         {/* Module Cards */}
         <div className="mb-8">
           <h2 className="font-display text-xl font-bold mb-4 flex items-center gap-2">
