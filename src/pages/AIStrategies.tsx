@@ -271,7 +271,7 @@ const AIStrategies = () => {
                     )}
 
                     {/* Actions */}
-                    <div className="flex gap-3">
+                    <div className="flex gap-2 flex-wrap">
                       <Button variant="outline" size="sm" className="flex-1 gap-2"
                         onClick={() => setExpandedId(expandedId === strategy.id ? null : strategy.id)}>
                         <Info className="w-4 h-4" />
@@ -287,8 +287,34 @@ const AIStrategies = () => {
                         <LineChart className="w-4 h-4" />
                         Chart Preview
                       </Button>
+                      <Button variant="outline" size="sm" className="gap-2"
+                        onClick={() => setWebhookId(webhookId === strategy.id ? null : strategy.id)}>
+                        <Webhook className="w-4 h-4" />
+                        Webhook
+                      </Button>
                     </div>
                   </div>
+
+                  {/* Paper Trading Toggle */}
+                  <div className="px-6 pb-4">
+                    <PaperTradingToggle
+                      strategyName={strategy.name}
+                      isPaper={paperModes[strategy.id] !== false}
+                      onToggle={(isPaper) => setPaperModes(prev => ({ ...prev, [strategy.id]: isPaper }))}
+                    />
+                  </div>
+
+                  {/* Webhook Integration */}
+                  {webhookId === strategy.id && (
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
+                      className="px-6 pb-4">
+                      <WebhookIntegration
+                        strategyId={strategy.id}
+                        strategyName={strategy.name}
+                        onClose={() => setWebhookId(null)}
+                      />
+                    </motion.div>
+                  )}
 
                   {/* Expanded Details */}
                   {expandedId === strategy.id && (
