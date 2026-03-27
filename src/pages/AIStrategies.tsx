@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import TradingViewChartModal from '@/components/dashboard/TradingViewChartModal';
+import WebhookIntegration from '@/components/dashboard/WebhookIntegration';
+import PaperTradingToggle from '@/components/dashboard/PaperTradingToggle';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -8,7 +10,7 @@ import {
   Zap, Bot, TrendingUp, Shield, Clock, Target, ChevronRight, Star,
   Play, Pause, BarChart3, Settings, LogOut, LineChart, PieChart,
   ArrowUpRight, Sparkles, Cpu, Brain, BookOpen, Info, Layers,
-  Crosshair, Gauge, Repeat, Zap as ZapIcon, RefreshCw, Plus
+  Crosshair, Gauge, Repeat, Zap as ZapIcon, RefreshCw, Plus, Webhook
 } from 'lucide-react';
 import StrategyChartPreview from '@/components/dashboard/StrategyChartPreview';
 
@@ -50,6 +52,8 @@ const AIStrategies = () => {
   const [bots, setBots] = useState<StrategyBot[]>([]);
   const [backtests, setBacktests] = useState<BacktestResult[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [webhookId, setWebhookId] = useState<string | null>(null);
+  const [paperModes, setPaperModes] = useState<Record<string, boolean>>({});
   const [chartPreviewStrategy, setChartPreviewStrategy] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
@@ -267,7 +271,7 @@ const AIStrategies = () => {
                     )}
 
                     {/* Actions */}
-                    <div className="flex gap-3">
+                    <div className="flex gap-2 flex-wrap">
                       <Button variant="outline" size="sm" className="flex-1 gap-2"
                         onClick={() => setExpandedId(expandedId === strategy.id ? null : strategy.id)}>
                         <Info className="w-4 h-4" />
@@ -283,8 +287,34 @@ const AIStrategies = () => {
                         <LineChart className="w-4 h-4" />
                         Chart Preview
                       </Button>
+                      <Button variant="outline" size="sm" className="gap-2"
+                        onClick={() => setWebhookId(webhookId === strategy.id ? null : strategy.id)}>
+                        <Webhook className="w-4 h-4" />
+                        Webhook
+                      </Button>
                     </div>
                   </div>
+
+                  {/* Paper Trading Toggle */}
+                  <div className="px-6 pb-4">
+                    <PaperTradingToggle
+                      strategyName={strategy.name}
+                      isPaper={paperModes[strategy.id] !== false}
+                      onToggle={(isPaper) => setPaperModes(prev => ({ ...prev, [strategy.id]: isPaper }))}
+                    />
+                  </div>
+
+                  {/* Webhook Integration */}
+                  {webhookId === strategy.id && (
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
+                      className="px-6 pb-4">
+                      <WebhookIntegration
+                        strategyId={strategy.id}
+                        strategyName={strategy.name}
+                        onClose={() => setWebhookId(null)}
+                      />
+                    </motion.div>
+                  )}
 
                   {/* Expanded Details */}
                   {expandedId === strategy.id && (
