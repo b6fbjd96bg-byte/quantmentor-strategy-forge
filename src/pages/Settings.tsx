@@ -77,6 +77,7 @@ const Settings = () => {
       } else {
         setUser(session.user);
         fetchProfile(session.user.id);
+        fetchBrokerConnections(session.user.id);
       }
     });
   }, [navigate]);
