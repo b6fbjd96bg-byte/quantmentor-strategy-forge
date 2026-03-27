@@ -82,7 +82,15 @@ const LiveTrading = () => {
   const connectedBrokers = brokerConnections.filter(b => b.is_connected).length;
 
   const handleConnectBroker = (brokerId: string) => {
-    toast.info('Go to Settings → Broker Connection to set up API keys.');
+    setPreselectedBroker(brokerId);
+    setConnectModalOpen(true);
+  };
+
+  const reloadBrokers = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) return;
+    const { data } = await supabase.from('broker_connections').select('*').eq('user_id', session.user.id);
+    setBrokerConnections((data as BrokerConnection[]) || []);
   };
 
   const getStatusIcon = (status: string) => {
