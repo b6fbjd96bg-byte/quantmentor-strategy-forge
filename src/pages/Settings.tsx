@@ -502,6 +502,11 @@ const Settings = () => {
           </div>
         </div>
       </main>
+      <ConnectExchangeModal
+        open={connectModalOpen}
+        onOpenChange={setConnectModalOpen}
+        onConnected={() => user && fetchBrokerConnections(user.id)}
+      />
     </div>
   );
 };
