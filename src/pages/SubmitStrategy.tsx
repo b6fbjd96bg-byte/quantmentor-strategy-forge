@@ -24,6 +24,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import StrategyChartPreview from '@/components/dashboard/StrategyChartPreview';
+import StrategyAgentChat from '@/components/dashboard/StrategyAgentChat';
 
 const steps = [
   { id: 1, title: 'Strategy Overview', icon: Target },
@@ -54,6 +55,7 @@ const SubmitStrategy = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [showAgent, setShowAgent] = useState(false);
   const [botResult, setBotResult] = useState<any>(null);
   const [user, setUser] = useState<any>(null);
   const navigate = useNavigate();
@@ -190,8 +192,9 @@ const SubmitStrategy = () => {
         .update({ status: 'active' })
         .eq('id', strategy.id);
 
-      setIsSubmitted(true);
-      toast.success('Trading bot created successfully!');
+      setBotResult(result);
+      setShowAgent(true);
+      toast.success('Strategy saved! AI Agent is now analyzing...');
     } catch (error) {
       console.error('Submit error:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to create trading bot');
@@ -199,6 +202,34 @@ const SubmitStrategy = () => {
       setIsSubmitting(false);
     }
   };
+
+  if (showAgent) {
+    return (
+      <StrategyAgentChat
+        strategy={{
+          name: formData.strategyName,
+          strategyType: formData.timeframe?.includes('Scalp') ? 'scalping' : formData.timeframe?.includes('Swing') ? 'swing' : 'momentum',
+          entryRules: formData.entryRules,
+          exitRules: formData.exitRules,
+          indicators: formData.indicators,
+          timeframe: formData.timeframe,
+          markets: formData.markets,
+          riskPerTrade: formData.maxRiskPerTrade,
+          stopLossType: formData.stopLossType,
+          takeProfitType: formData.takeProfitType,
+        }}
+        onApprove={() => {
+          setShowAgent(false);
+          setIsSubmitted(true);
+          toast.success('Strategy approved and deployed!');
+        }}
+        onBack={() => {
+          setShowAgent(false);
+          setCurrentStep(4);
+        }}
+      />
+    );
+  }
 
   if (isSubmitted) {
     return (
