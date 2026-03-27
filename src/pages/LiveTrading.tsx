@@ -42,6 +42,8 @@ const LiveTrading = () => {
   const [closedTrades, setClosedTrades] = useState<BotTrade[]>([]);
   const [brokerConnections, setBrokerConnections] = useState<BrokerConnection[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [connectModalOpen, setConnectModalOpen] = useState(false);
+  const [preselectedBroker, setPreselectedBroker] = useState<string | undefined>();
   const navigate = useNavigate();
 
   const supportedBrokers = [
