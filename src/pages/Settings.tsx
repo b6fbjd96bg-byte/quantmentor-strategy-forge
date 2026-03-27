@@ -59,9 +59,16 @@ const Settings = () => {
     marketNews: false,
   });
 
-  const [connectedBrokers] = useState([
-    { name: 'Interactive Brokers', status: 'connected', lastSync: '2 min ago' },
-  ]);
+  const [connectedBrokers, setConnectedBrokers] = useState<any[]>([]);
+  const [connectModalOpen, setConnectModalOpen] = useState(false);
+
+  const fetchBrokerConnections = async (userId: string) => {
+    const { data } = await supabase
+      .from('broker_connections')
+      .select('*')
+      .eq('user_id', userId);
+    setConnectedBrokers((data || []).filter((b: any) => b.is_connected));
+  };
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {

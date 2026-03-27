@@ -341,6 +341,12 @@ const LiveTrading = () => {
           </>
         )}
       </main>
+      <ConnectExchangeModal
+        open={connectModalOpen}
+        onOpenChange={setConnectModalOpen}
+        onConnected={reloadBrokers}
+        preselectedBroker={preselectedBroker}
+      />
     </div>
   );
 };
