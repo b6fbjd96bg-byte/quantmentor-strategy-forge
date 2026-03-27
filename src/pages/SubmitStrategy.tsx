@@ -192,8 +192,9 @@ const SubmitStrategy = () => {
         .update({ status: 'active' })
         .eq('id', strategy.id);
 
-      setIsSubmitted(true);
-      toast.success('Trading bot created successfully!');
+      setBotResult(result);
+      setShowAgent(true);
+      toast.success('Strategy saved! AI Agent is now analyzing...');
     } catch (error) {
       console.error('Submit error:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to create trading bot');
