@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import TradingViewChartModal from '@/components/dashboard/TradingViewChartModal';
+import WebhookIntegration from '@/components/dashboard/WebhookIntegration';
+import PaperTradingToggle from '@/components/dashboard/PaperTradingToggle';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -8,7 +10,7 @@ import {
   Zap, Bot, TrendingUp, Shield, Clock, Target, ChevronRight, Star,
   Play, Pause, BarChart3, Settings, LogOut, LineChart, PieChart,
   ArrowUpRight, Sparkles, Cpu, Brain, BookOpen, Info, Layers,
-  Crosshair, Gauge, Repeat, Zap as ZapIcon, RefreshCw, Plus
+  Crosshair, Gauge, Repeat, Zap as ZapIcon, RefreshCw, Plus, Webhook
 } from 'lucide-react';
 import StrategyChartPreview from '@/components/dashboard/StrategyChartPreview';
 
