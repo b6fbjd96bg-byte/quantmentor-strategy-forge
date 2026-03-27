@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   BookOpen, Plus, TrendingUp, TrendingDown, Calendar, Target,
   Brain, Star, Filter, Search, ArrowUpDown, BarChart3, PieChart,
-  X, Edit2, Trash2, Eye, ChevronLeft, ChevronRight
+  X, Edit2, Trash2, Eye, ChevronLeft, ChevronRight, Download, Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
