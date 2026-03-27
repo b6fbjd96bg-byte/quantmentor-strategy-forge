@@ -11,6 +11,10 @@ import {
 } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 import OnboardingTour from '@/components/onboarding/OnboardingTour';
+import QuickStatsRow from '@/components/dashboard/QuickStatsRow';
+import FlipTracker from '@/components/dashboard/FlipTracker';
+import LiveBotStatus from '@/components/dashboard/LiveBotStatus';
+import IndianMarketBanner from '@/components/dashboard/IndianMarketBanner';
 
 interface Strategy {
   id: string;
