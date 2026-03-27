@@ -33,6 +33,10 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import RiskDisclosure from "./pages/RiskDisclosure";
 import Compliance from "./pages/Compliance";
+import StrategyMarketplace from "./pages/StrategyMarketplace";
+import Leaderboard from "./pages/Leaderboard";
+import RiskManager from "./pages/RiskManager";
+import NoCodeStrategyBuilder from "./pages/NoCodeStrategyBuilder";
 
 const queryClient = new QueryClient();
 
